@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:p="primefaces"
+>
+<h:head>
+  <title>Entropy</title>
+  <h:outputStylesheet name="css/tailwind.css" />
+</h:head>
+
+<h:body styleClass="p-0 m-0">
+  <div class="bg-blue-100 flex justify-end p-1.5">
+
+    <p:sidebar widgetVar="sidebar3" position="top">
+        <h3>Top Sidebar</h3>
+    </p:sidebar>
+
+    <p:commandButton icon="pi pi-arrow-down" type="button" onclick="PF('sidebar3').show()" styleClass="mr-2" />
+  </div>
+</h:body>
+</html>
