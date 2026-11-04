@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<!--
+  The body of a page that lists articles: the list on the left, and (unless showTopics="false")
+  the Topics panel on the right. Put the page's content inside it.
+
+    <comp:feedLayout showTopics="false">
+      <h1>Following</h1>
+      <comp:articleGrid .../>
+    </comp:feedLayout>
+-->
+<cc:interface>
+  <cc:attribute name="showTopics" default="true" />
+</cc:interface>
+
+<cc:implementation>
+  <div class="grid gap-6 #{cc.attrs.showTopics ? 'xl:grid-cols-[minmax(0,1fr)_19rem]' : ''}">
+    <section>
+      <cc:insertChildren />
+    </section>
+
+    <ui:fragment rendered="#{cc.attrs.showTopics}">
+      <aside aria-label="Topics" class="xl:sticky xl:top-4 xl:self-start">
+        <comp:topicsPanel />
+      </aside>
+    </ui:fragment>
+  </div>
+</cc:implementation>
+</html>

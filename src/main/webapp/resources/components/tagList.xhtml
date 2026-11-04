@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<!--
+  A row of topic chips, each linking to /tag/{name}.
+
+    <comp:tagList tags="#{article.tagList}" styleClass="mt-4" />
+-->
+<cc:interface>
+  <cc:attribute name="tags" required="true" />
+  <cc:attribute name="styleClass" default="" />
+</cc:interface>
+
+<cc:implementation>
+  <ui:fragment rendered="#{not empty cc.attrs.tags}">
+    <div class="flex flex-wrap gap-2 #{cc.attrs.styleClass}">
+      <ui:repeat value="#{cc.attrs.tags}" var="t">
+        <h:outputLink value="#{nav.tag(t)}">
+          <p:tag value="#{t}" severity="info" rounded="true" />
+        </h:outputLink>
+      </ui:repeat>
+    </div>
+  </ui:fragment>
+</cc:implementation>
+</html>

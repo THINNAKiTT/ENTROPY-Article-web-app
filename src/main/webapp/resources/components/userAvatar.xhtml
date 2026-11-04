@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<!--
+  A round avatar: the person's picture if they set one, otherwise their initial on a colour.
+
+    <comp:userAvatar label="#{u.initial}" imageUrl="#{u.avatarUrl}" size="large" />
+
+  size: normal, large or xlarge.
+-->
+<cc:interface>
+  <cc:attribute name="label" />
+  <cc:attribute name="imageUrl" />
+  <cc:attribute name="size" default="normal" />
+</cc:interface>
+
+<cc:implementation>
+  <p:avatar label="#{cc.attrs.label}" shape="circle" dynamicColor="true" size="#{cc.attrs.size}" rendered="#{empty cc.attrs.imageUrl}" />
+  <p:avatar shape="circle" size="#{cc.attrs.size}" rendered="#{not empty cc.attrs.imageUrl}">
+    <h:graphicImage url="#{cc.attrs.imageUrl}" alt="" styleClass="h-full w-full object-cover" />
+  </p:avatar>
+</cc:implementation>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<f:metadata>
+  <f:viewAction action="#{userSessionBean.requireLogin}" />
+</f:metadata>
+
+<!-- /saved: the articles you saved. Needs an account. -->
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title">Saved articles - Entropy</ui:define>
+
+  <ui:define name="content">
+    <comp:feedLayout showTopics="false">
+      <h1 class="mb-5 text-2xl font-bold tracking-tight">Saved articles</h1>
+
+      <comp:articleGrid items="#{savedBean.articles}" owner="#{savedBean}">
+        <f:facet name="whenEmpty">
+          <comp:emptyState icon="pi pi-bookmark" title="Nothing saved yet."
+                           text="Use Save under an article to keep it here."
+                           actionLabel="Browse articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+        </f:facet>
+      </comp:articleGrid>
+    </comp:feedLayout>
+  </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<!-- /following: new articles from the writers you follow. -->
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title">Following - Entropy</ui:define>
+
+  <ui:define name="content">
+    <comp:feedLayout showTopics="false">
+      <h1 class="mb-5 flex items-center gap-2 text-2xl font-bold tracking-tight"><i class="pi pi-users muted text-xl" /> Following</h1>
+
+      <comp:articleGrid items="#{followingBean.articles}" owner="#{followingBean}">
+        <f:facet name="whenEmpty">
+          <h:panelGroup>
+            <comp:emptyState rendered="#{!userSessionBean.loggedIn}" icon="pi pi-users" title="Log in to see writers you follow."
+                             actionLabel="Log in" actionIcon="pi pi-sign-in" actionOnclick="PF('loginDialog').show()" />
+            <comp:emptyState rendered="#{userSessionBean.loggedIn}" icon="pi pi-users" title="Your feed is empty."
+                             text="Open an article and press Follow on the writer's card. Their new articles will show up here."
+                             actionLabel="Browse articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+          </h:panelGroup>
+        </f:facet>
+      </comp:articleGrid>
+    </comp:feedLayout>
+  </ui:define>
+</ui:composition>
+</html>

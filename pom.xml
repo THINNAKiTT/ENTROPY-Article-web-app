@@ -9,9 +9,8 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>entropy Maven Webapp</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <name>Entropy</name>
+  <description>A small article-sharing site: Jakarta Faces, PrimeFaces and Tailwind on GlassFish, with MariaDB/MySQL.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

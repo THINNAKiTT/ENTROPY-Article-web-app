@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:p="primefaces"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<f:metadata>
+  <f:viewParam name="slug" value="#{articleBean.slug}" />
+  <f:viewAction action="#{articleBean.load}" />
+</f:metadata>
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title"><h:outputText value="#{articleBean.article.title}" /> - Entropy</ui:define>
+
+  <ui:define name="content">
+
+    <div class="mx-auto max-w-lg">
+      <comp:emptyState rendered="#{articleBean.article == null}" icon="pi pi-search" title="That article could not be found."
+                       actionLabel="Back to the latest articles" actionIcon="pi pi-arrow-left" actionHref="#{nav.home}" />
+    </div>
+
+    <ui:fragment rendered="#{articleBean.article != null}">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+
+        <!-- the article and its conversation -->
+        <h:form id="articleForm" styleClass="grid content-start gap-6">
+
+          <p:card>
+            <ui:fragment rendered="#{!articleBean.article.published}">
+              <div class="mb-4"><p:tag value="Draft: only you can see this" severity="warning" icon="pi pi-lock" /></div>
+            </ui:fragment>
+
+            <h1 class="page-title"><h:outputText value="#{articleBean.article.title}" /></h1>
+
+            <p class="muted mt-3 text-sm">
+              <h:outputLink value="#{nav.profile(articleBean.article.authorUsername)}" styleClass="link font-semibold text-ink">
+                <h:outputText value="#{articleBean.article.authorName}" />
+              </h:outputLink>
+              <span class="mx-1">on</span><h:outputText value="#{articleBean.article.date}" />
+              <span class="ml-3"><h:outputText value="#{articleBean.article.readingTime}" /></span>
+            </p>
+
+            <comp:tagList tags="#{articleBean.article.tagList}" styleClass="mt-4" />
+
+            <p:divider />
+
+            <div class="reading"><h:outputText value="#{articleBean.article.content}" /></div>
+
+            <f:facet name="footer">
+              <div class="flex flex-wrap items-center gap-1">
+                <p:commandButton action="#{articleBean.toggleLike}" process="@this" update="@form :growl"
+                                 icon="#{articleBean.article.liked ? 'pi pi-heart-fill' : 'pi pi-heart'}"
+                                 value="#{articleBean.article.likeCount} #{articleBean.article.likeCount == 1 ? 'like' : 'likes'}"
+                                 styleClass="#{articleBean.article.liked ? 'ui-button-danger' : 'ui-button-secondary'} ui-button-flat"
+                                 title="#{articleBean.article.liked ? 'Remove your like' : 'Like this article'}" />
+
+                <p:commandButton action="#{articleBean.toggleBookmark}" process="@this" update="@form :growl"
+                                 icon="#{articleBean.article.bookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}"
+                                 value="#{articleBean.article.bookmarked ? 'Saved' : 'Save'}"
+                                 styleClass="#{articleBean.article.bookmarked ? 'ui-button-info' : 'ui-button-secondary'} ui-button-flat"
+                                 title="#{articleBean.article.bookmarked ? 'Remove from your saved articles' : 'Save for later'}" />
+
+                <span class="ml-auto flex items-center gap-2">
+                  <p:button href="#{nav.edit(articleBean.article.id)}" value="Edit" icon="pi pi-pencil" rendered="#{articleBean.author}"
+                            styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
+                  <p:commandButton value="Delete" icon="pi pi-trash" action="#{articleBean.deleteArticle}" process="@this" update=":growl"
+                                   rendered="#{articleBean.author}" styleClass="ui-button-outlined ui-button-danger ui-button-sm">
+                    <p:confirm header="Delete article" message="Delete this article and all of its comments?" icon="pi pi-exclamation-triangle" />
+                  </p:commandButton>
+                </span>
+              </div>
+            </f:facet>
+          </p:card>
+
+          <!-- plain div: a JSF id inside a form would become "articleForm:comments" and break #comments links -->
+          <div id="comments">
+          <p:card>
+            <f:facet name="title">#{commentsBean.count} #{commentsBean.count == 1 ? 'comment' : 'comments'}</f:facet>
+
+            <ui:fragment rendered="#{empty commentsBean.thread}">
+              <p class="muted">No comments yet. Start the conversation.</p>
+            </ui:fragment>
+
+            <ui:repeat value="#{commentsBean.thread}" var="c">
+              <div class="#{c.reply ? 'ml-6 border-l-2 border-hair pl-4' : 'border-t border-hair'} py-4">
+                <div class="flex items-center gap-2 text-sm">
+                  <comp:userAvatar label="#{c.authorName.substring(0, 1).toUpperCase()}" />
+                  <h:outputLink value="#{nav.profile(c.authorUsername)}" styleClass="link font-semibold">
+                    <h:outputText value="#{c.authorName}" />
+                  </h:outputLink>
+                  <span class="muted"><h:outputText value="#{c.date}" /></span>
+                </div>
+                <p class="comment-body mt-2"><h:outputText value="#{c.content}" /></p>
+                <div class="mt-1 flex items-center gap-1">
+                  <p:commandButton value="Reply" icon="pi pi-reply" action="#{commentsBean.startReply(c.id)}" process="@this" update="@form"
+                                   rendered="#{userSessionBean.loggedIn}" styleClass="ui-button-flat ui-button-secondary ui-button-sm" />
+                  <p:commandButton value="Delete" icon="pi pi-trash" action="#{commentsBean.delete(c.id)}" process="@this" update="@form :growl"
+                                   rendered="#{commentsBean.canDelete(c)}" styleClass="ui-button-flat ui-button-danger ui-button-sm">
+                    <p:confirm header="Delete comment" message="Delete this comment?" icon="pi pi-exclamation-triangle" />
+                  </p:commandButton>
+                </div>
+              </div>
+            </ui:repeat>
+
+            <div class="border-t border-hair pt-5">
+              <ui:fragment rendered="#{userSessionBean.loggedIn}">
+                <ui:fragment rendered="#{commentsBean.replying}">
+                  <p class="mb-2 flex items-center gap-2 text-sm">
+                    Replying to <strong><h:outputText value="#{commentsBean.replyToName}" /></strong>
+                    <p:commandButton value="Cancel" icon="pi pi-times" action="#{commentsBean.cancelReply}" process="@this" update="@form"
+                                     styleClass="ui-button-flat ui-button-secondary ui-button-sm" />
+                  </p>
+                </ui:fragment>
+                <div class="flex flex-col gap-2">
+                  <p:outputLabel for="newComment" value="#{commentsBean.replying ? 'Your reply' : 'Add a comment'}" />
+                  <p:inputTextarea id="newComment" value="#{commentsBean.newComment}" rows="4" autoResize="false" styleClass="w-full" />
+                  <div>
+                    <p:commandButton value="#{commentsBean.replying ? 'Post reply' : 'Post comment'}" icon="pi pi-send"
+                                     action="#{commentsBean.add}" process="@form" update="@form :growl" />
+                  </div>
+                </div>
+              </ui:fragment>
+              <ui:fragment rendered="#{!userSessionBean.loggedIn}">
+                <p>
+                  <a href="#" class="link font-semibold text-cold" onclick="PF('loginDialog').show(); return false;">Log in</a> or
+                  <a href="#" class="link font-semibold text-cold" onclick="PF('signupDialog').show(); return false;">create an account</a> to join the conversation.
+                </p>
+              </ui:fragment>
+            </div>
+          </p:card>
+          </div>
+        </h:form>
+
+        <!-- about the writer -->
+        <aside class="xl:sticky xl:top-4 xl:self-start">
+          <p:card>
+            <div class="flex items-center gap-3">
+              <comp:userAvatar label="#{articleBean.writer.initial}" imageUrl="#{articleBean.writer.avatarUrl}" size="large" />
+              <div class="min-w-0">
+                <h:outputLink value="#{nav.profile(articleBean.writer.username)}" styleClass="link text-lg font-bold">
+                  <h:outputText value="#{articleBean.writer.displayName}" />
+                </h:outputLink>
+                <p class="muted text-sm">@<h:outputText value="#{articleBean.writer.username}" /></p>
+              </div>
+            </div>
+
+            <ui:fragment rendered="#{not empty articleBean.writer.bio}">
+              <p class="muted mt-3 text-sm"><h:outputText value="#{articleBean.writer.bio}" /></p>
+            </ui:fragment>
+
+            <h:form id="authorForm" styleClass="mt-4 flex flex-wrap gap-2">
+              <p:commandButton value="#{articleBean.followingWriter ? 'Following' : 'Follow'}"
+                               icon="#{articleBean.followingWriter ? 'pi pi-check' : 'pi pi-user-plus'}"
+                               action="#{articleBean.toggleFollowWriter}" process="@this" update="@form :growl"
+                               rendered="#{!articleBean.author}"
+                               styleClass="#{articleBean.followingWriter ? 'ui-button-outlined ui-button-secondary' : ''}" />
+              <p:button href="#{nav.profile(articleBean.writer.username)}" value="View profile" icon="pi pi-user"
+                        styleClass="ui-button-outlined ui-button-secondary" />
+            </h:form>
+          </p:card>
+        </aside>
+      </div>
+    </ui:fragment>
+  </ui:define>
+</ui:composition>
+</html>

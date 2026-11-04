@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:p="primefaces"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<f:metadata>
+  <f:viewParam name="username" value="#{profileBean.username}" />
+  <f:viewParam name="tab" value="#{profileBean.tab}" />
+  <f:viewAction action="#{profileBean.init}" />
+</f:metadata>
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title"><h:outputText value="#{profileBean.user.displayName}" /> - Entropy</ui:define>
+
+  <ui:define name="content">
+
+    <div class="mx-auto max-w-lg">
+      <comp:emptyState rendered="#{profileBean.user == null}" icon="pi pi-user" title="That profile could not be found."
+                       actionLabel="Back to articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+    </div>
+
+    <ui:fragment rendered="#{profileBean.user != null}">
+      <div class="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+
+        <!-- who this is -->
+        <aside class="lg:sticky lg:top-4 lg:self-start">
+          <p:card>
+            <h:form id="head" styleClass="flex flex-col items-start gap-4">
+              <comp:userAvatar label="#{profileBean.user.initial}" imageUrl="#{profileBean.user.avatarUrl}" size="xlarge" />
+
+              <div class="min-w-0">
+                <h1 class="text-2xl font-extrabold tracking-tight"><h:outputText value="#{profileBean.user.displayName}" /></h1>
+                <p class="muted">@<h:outputText value="#{profileBean.user.username}" /></p>
+              </div>
+
+              <ui:fragment rendered="#{not empty profileBean.user.bio}">
+                <p class="comment-body text-sm"><h:outputText value="#{profileBean.user.bio}" /></p>
+              </ui:fragment>
+
+              <div class="flex gap-6 text-sm">
+                <span><strong>#{profileBean.articleCount}</strong> <span class="muted">#{profileBean.articleCount == 1 ? 'article' : 'articles'}</span></span>
+                <span><strong>#{profileBean.followersCount}</strong> <span class="muted">#{profileBean.followersCount == 1 ? 'follower' : 'followers'}</span></span>
+                <span><strong>#{profileBean.followingCount}</strong> <span class="muted">following</span></span>
+              </div>
+
+              <!-- someone else's profile: follow / unfollow -->
+              <p:commandButton value="#{profileBean.following ? 'Following' : 'Follow'}"
+                               icon="#{profileBean.following ? 'pi pi-check' : 'pi pi-user-plus'}"
+                               action="#{profileBean.toggleFollow}" process="@this" update="@form :growl"
+                               rendered="#{!profileBean.ownProfile}"
+                               styleClass="#{profileBean.following ? 'ui-button-outlined ui-button-secondary' : ''}"
+                               title="#{profileBean.following ? 'Click to unfollow' : 'Follow to see their articles in your feed'}" />
+
+              <!-- your own profile: write, or edit your details in a popup -->
+              <ui:fragment rendered="#{profileBean.ownProfile}">
+                <div class="flex flex-wrap gap-2">
+                  <p:button href="#{nav.write}" value="Write" icon="pi pi-pencil" />
+                  <p:commandButton value="Edit profile" icon="pi pi-cog" action="#{profileBean.startEdit}" process="@this"
+                                   update=":settingsForm" oncomplete="PF('settingsDialog').show()"
+                                   styleClass="ui-button-outlined ui-button-secondary" />
+                </div>
+              </ui:fragment>
+            </h:form>
+          </p:card>
+        </aside>
+
+        <!-- what they've written, who follows them -->
+        <section class="min-w-0">
+          <h:form id="profileTabs" styleClass="mb-5">
+            <p:tabMenu activeIndex="#{profileBean.tabIndex}">
+              <p:menuitem value="Articles" icon="pi pi-book" url="#{nav.profile(profileBean.user.username)}" />
+              <p:menuitem value="Followers" icon="pi pi-users" url="#{nav.profile(profileBean.user.username, 'followers')}" />
+              <p:menuitem value="Following" icon="pi pi-user-plus" url="#{nav.profile(profileBean.user.username, 'following')}" />
+            </p:tabMenu>
+          </h:form>
+
+          <!-- articles -->
+          <ui:fragment rendered="#{profileBean.tabIndex == 0}">
+            <comp:articleGrid items="#{profileBean.articles}" owner="#{profileBean}">
+              <f:facet name="whenEmpty">
+                <h:panelGroup>
+                  <comp:emptyState rendered="#{profileBean.ownProfile}" icon="pi pi-pencil" title="You haven't written anything yet."
+                                   actionLabel="Write your first article" actionIcon="pi pi-pencil" actionHref="#{nav.write}" />
+                  <comp:emptyState rendered="#{!profileBean.ownProfile}" title="Nothing published yet." />
+                </h:panelGroup>
+              </f:facet>
+            </comp:articleGrid>
+          </ui:fragment>
+
+          <!-- followers / following -->
+          <ui:fragment rendered="#{profileBean.tabIndex == 1 or profileBean.tabIndex == 2}">
+            <comp:emptyState rendered="#{empty profileBean.people}" icon="pi pi-users"
+                             title="#{profileBean.tabIndex == 1 ? 'No followers yet.' : 'Not following anyone yet.'}" />
+            <div class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+              <ui:repeat value="#{profileBean.people}" var="u">
+                <comp:userCard user="#{u}" />
+              </ui:repeat>
+            </div>
+          </ui:fragment>
+        </section>
+      </div>
+
+      <!-- the "Edit profile" popup (your own profile only). Its fields are a copy, so a rejected save changes nothing. -->
+      <p:dialog header="Edit profile" widgetVar="settingsDialog" modal="true" appendTo="@(body)" dynamic="false"
+                draggable="false" resizable="false" responsive="true" closeOnEscape="true"
+                showEffect="fade" hideEffect="fade" width="30rem" rendered="#{profileBean.ownProfile}">
+        <h:form id="settingsForm" styleClass="flex flex-col gap-5">
+          <div class="flex flex-col gap-2">
+            <p:outputLabel for="displayName" value="Display name" />
+            <p:inputText id="displayName" value="#{profileBean.editUser.displayName}" maxlength="100" styleClass="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <p:outputLabel for="bio" value="Bio" />
+            <p:inputTextarea id="bio" value="#{profileBean.editUser.bio}" rows="4" autoResize="false" styleClass="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <p:outputLabel for="avatar" value="Picture link" />
+            <p:inputText id="avatar" value="#{profileBean.editUser.avatarUrl}" maxlength="512" placeholder="https://" styleClass="w-full" />
+            <small class="muted">Optional. A link to an image, starting with https://</small>
+          </div>
+          <div class="flex flex-col gap-2">
+            <p:outputLabel for="newPassword" value="New password" />
+            <p:password id="newPassword" value="#{profileBean.editUser.rawPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="new-password" />
+            <small class="muted">Leave empty to keep your current password.</small>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <p:commandButton value="Cancel" type="button" icon="pi pi-times" onclick="PF('settingsDialog').hide()"
+                             styleClass="ui-button-flat ui-button-secondary" />
+            <p:commandButton value="Save changes" icon="pi pi-check" action="#{profileBean.updateProfile}" process="@form"
+                             update="@form :head :navForm:navUser :growl" oncomplete="if (args.saved) PF('settingsDialog').hide()" />
+          </div>
+        </h:form>
+      </p:dialog>
+    </ui:fragment>
+  </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:p="primefaces"
+  xmlns:pt="jakarta.faces.passthrough"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<!-- Shared page layout. A page uses it with <ui:composition template="/WEB-INF/templates/layout.xhtml"> and fills in
+     "title" and "content". A page that needs view parameters or view actions puts its own
+     <f:metadata> in the page itself, outside the ui:composition (GlassFish ignores it in the template).
+     Links use the clean addresses from #{nav}, e.g. #{nav.article(slug)} or #{nav.profile(username)}. -->
+<h:head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><ui:insert name="title">Entropy</ui:insert></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&amp;display=swap" />
+  <h:outputStylesheet name="css/tailwind.css" />
+</h:head>
+
+<h:body>
+  <!-- notifications: every page and every ajax action updates this with update=":growl" -->
+  <p:growl id="growl" showDetail="true" skipDetailIfEqualsSummary="true" life="4500" />
+
+  <!-- one confirm dialog for the whole app: put <p:confirm .../> inside any p:commandButton -->
+  <h:form id="confirmForm">
+    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="26rem">
+      <p:commandButton value="Yes" type="button" icon="pi pi-check" styleClass="ui-confirmdialog-yes" />
+      <p:commandButton value="No" type="button" icon="pi pi-times" styleClass="ui-confirmdialog-no ui-button-flat" />
+    </p:confirmDialog>
+  </h:form>
+
+  <!-- Log in and Sign up are popups, not pages. Open them with PF('loginDialog').show() / PF('signupDialog').show().
+       A request that needs a log in (a page that needs an account, a like from a visitor) opens the log in popup:
+       Faces.promptLogin puts "promptLogin" in the flash and sends the visitor home. -->
+  <comp:loginDialog />
+  <comp:signupDialog />
+  <ui:fragment rendered="#{flash.promptLogin}">
+    <script>$(function(){ PF('loginDialog').show(); });</script>
+  </ui:fragment>
+
+  <!-- The whole header is ONE form. Menu items, the search box and "Log out" are command components,
+       and Faces warns (as a popup) about every command component that is not inside a form. -->
+  <h:form id="navForm">
+    <!-- three columns: links on the left, search in the middle, your buttons on the right.
+         (On small screens the three parts simply wrap onto separate lines.) -->
+    <header class="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hair bg-[#f8f9fa] px-3 py-1.5 md:px-8 xl:grid xl:grid-cols-[minmax(max-content,1fr)_minmax(14rem,28rem)_minmax(max-content,1fr)]">
+
+      <p:menubar styleClass="app-nav">
+        <f:facet name="start">
+          <h:outputLink value="#{nav.home}" styleClass="wordmark" title="Entropy home"><span>e</span><span>n</span><span>t</span><span>r</span><span>o</span><span>p</span><span>y</span></h:outputLink>
+        </f:facet>
+
+        <p:menuitem value="Article" icon="pi pi-book" url="#{nav.home}" />
+        <p:menuitem value="Following" icon="pi pi-users" url="#{nav.following}" rendered="#{userSessionBean.loggedIn}" />
+        <p:menuitem value="Saved" icon="pi pi-bookmark" url="#{nav.saved}" rendered="#{userSessionBean.loggedIn}" />
+      </p:menubar>
+
+      <!-- Search: press Enter to search. The button is only there so Enter has something to press.
+           It is hidden with an inline style on purpose: the PrimeFaces theme overrides CSS classes
+           (even Tailwind's sr-only), and a button left in the flow makes the cell taller than the
+           input, which pushes the input up above the other header items. -->
+      <div class="order-last mx-auto w-full xl:order-none xl:max-w-md">
+        <span class="ui-input-icon-left block w-full">
+          <i class="pi pi-search" />
+          <p:inputText id="q" value="#{searchBean.q}" placeholder="Search articles" styleClass="w-full" pt:aria-label="Search articles" />
+        </span>
+        <p:commandButton id="searchButton" value="Search" action="#{searchBean.search}" ajax="false"
+                         style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap" />
+        <p:defaultCommand target="searchButton" />
+      </div>
+
+      <div class="ml-auto flex items-center justify-end gap-2">
+        <p:button href="#{nav.write}" value="Write" icon="pi pi-pencil" rendered="#{userSessionBean.loggedIn}" />
+
+        <!-- id so that saving your profile can refresh your name and picture here -->
+        <h:panelGroup id="navUser" layout="block" rendered="#{userSessionBean.loggedIn}">
+          <h:outputLink value="#{nav.profile(userSessionBean.currentUser.username)}" title="Your profile"
+                        styleClass="flex items-center gap-2 font-semibold">
+            <comp:userAvatar label="#{userSessionBean.currentUser.initial}" imageUrl="#{userSessionBean.currentUser.avatarUrl}" />
+            <span class="hidden 2xl:inline"><h:outputText value="#{userSessionBean.currentUser.displayName}" /></span>
+          </h:outputLink>
+        </h:panelGroup>
+        <p:commandButton value="Log out" icon="pi pi-sign-out" action="#{userSessionBean.logout}" ajax="false" rendered="#{userSessionBean.loggedIn}"
+                         styleClass="ui-button-flat ui-button-secondary ui-button-sm" />
+
+        <p:commandButton type="button" value="Log in" icon="pi pi-sign-in" onclick="PF('loginDialog').show()"
+                         rendered="#{!userSessionBean.loggedIn}" styleClass="ui-button-flat" />
+        <p:commandButton type="button" value="Sign up" icon="pi pi-user-plus" onclick="PF('signupDialog').show()"
+                         rendered="#{!userSessionBean.loggedIn}" />
+      </div>
+    </header>
+  </h:form>
+
+  <main class="w-full px-3 py-6 md:px-8">
+    <ui:insert name="content">Nothing here.</ui:insert>
+  </main>
+
+  <footer class="muted w-full px-3 pb-10 pt-2 text-sm md:px-8">
+    Entropy 2077
+  </footer>
+</h:body>
+</html>

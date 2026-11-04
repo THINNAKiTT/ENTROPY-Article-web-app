@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<!--
+  A card for one person: avatar, name (links to their profile), @username and bio.
+
+    <comp:userCard user="#{u}" />
+-->
+<cc:interface>
+  <cc:attribute name="user" required="true" />
+</cc:interface>
+
+<cc:implementation>
+  <p:card>
+    <div class="flex items-start gap-3">
+      <comp:userAvatar label="#{cc.attrs.user.initial}" imageUrl="#{cc.attrs.user.avatarUrl}" size="large" />
+      <div class="min-w-0">
+        <h:outputLink value="#{nav.profile(cc.attrs.user.username)}" styleClass="link text-lg font-bold">
+          <h:outputText value="#{cc.attrs.user.displayName}" />
+        </h:outputLink>
+        <p class="muted text-sm">@<h:outputText value="#{cc.attrs.user.username}" /></p>
+      </div>
+    </div>
+
+    <ui:fragment rendered="#{not empty cc.attrs.user.bio}">
+      <p class="muted mt-3 text-sm"><h:outputText value="#{cc.attrs.user.bio}" /></p>
+    </ui:fragment>
+  </p:card>
+</cc:implementation>
+</html>

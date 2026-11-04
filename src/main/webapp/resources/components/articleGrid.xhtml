@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<!--
+  A grid of article cards, each with Like / Comments / Save buttons.
+
+    <comp:articleGrid items="#{homeBean.articles}" owner="#{homeBean}">
+      <f:facet name="whenEmpty">
+        <comp:emptyState title="Nothing saved yet." />      shown when there are no articles
+      </f:facet>
+    </comp:articleGrid>
+
+  items: the articles to show.
+  owner: the bean that has toggleLike(id) and toggleBookmark(id) (ArticleListBean).
+  whenEmpty facet: optional. Without it a plain "No articles here yet." card is shown.
+-->
+<cc:interface>
+  <cc:attribute name="items" required="true" />
+  <cc:attribute name="owner" required="true" />
+  <cc:facet name="whenEmpty" />
+</cc:interface>
+
+<cc:implementation>
+  <h:form id="listForm">
+
+    <h:panelGroup rendered="#{empty cc.attrs.items}">
+      <cc:renderFacet name="whenEmpty" />
+      <comp:emptyState rendered="#{empty cc.facets.whenEmpty}" title="No articles here yet." />
+    </h:panelGroup>
+
+    <div class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+      <ui:repeat value="#{cc.attrs.items}" var="a">
+        <!-- the left rule shifts from blue-grey to orange as an article collects likes and comments -->
+        <p:card style="border-left: 4px solid skyblue">
+          <f:facet name="title">
+            <h:outputLink value="#{nav.article(a.slug)}" styleClass="entry-link">
+              <h:outputText value="#{a.title}" />
+            </h:outputLink>
+            <!-- margins go on a plain span: the PrimeFaces theme overrides margins set on its own components -->
+            <ui:fragment rendered="#{!a.published}">
+              <span class="ml-2 align-middle"><p:tag value="Draft" severity="warning" /></span>
+            </ui:fragment>
+          </f:facet>
+
+          <f:facet name="subtitle">
+            <h:outputLink value="#{nav.profile(a.authorUsername)}" styleClass="link font-semibold">
+              <h:outputText value="#{a.authorName}" />
+            </h:outputLink>
+            <span class="mx-1">on</span><h:outputText value="#{a.date}" />
+            <span class="ml-3"><h:outputText value="#{a.readingTime}" /></span>
+          </f:facet>
+
+          <p class="excerpt"><h:outputText value="#{a.excerpt}" /></p>
+
+          <comp:tagList tags="#{a.tagList}" styleClass="mt-4" />
+
+          <f:facet name="footer">
+            <div class="flex flex-wrap items-center gap-1">
+              <p:commandButton action="#{cc.attrs.owner.toggleLike(a.id)}" process="@this" update="@form :growl"
+                               icon="#{a.liked ? 'pi pi-heart-fill' : 'pi pi-heart'}" value="#{a.likeCount}"
+                               styleClass="#{a.liked ? 'ui-button-danger' : 'ui-button-secondary'} ui-button-flat ui-button-sm"
+                               title="#{a.liked ? 'Remove your like' : 'Like this article'}" />
+
+              <p:button href="#{nav.article(a.slug)}#comments" icon="pi pi-comment" value="#{a.commentCount}"
+                        styleClass="ui-button-secondary ui-button-flat ui-button-sm" title="Comments" />
+
+              <!-- Save sits at the right edge: ml-auto on a plain span (not on the PrimeFaces button) -->
+              <span class="ml-auto">
+                <p:commandButton action="#{cc.attrs.owner.toggleBookmark(a.id)}" process="@this" update="@form :growl"
+                                 icon="#{a.bookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}"
+                                 value="#{a.bookmarked ? 'Saved' : 'Save'}"
+                                 styleClass="#{a.bookmarked ? 'ui-button-info' : 'ui-button-secondary'} ui-button-flat ui-button-sm"
+                                 title="#{a.bookmarked ? 'Remove from your saved articles' : 'Save for later'}" />
+              </span>
+            </div>
+          </f:facet>
+        </p:card>
+      </ui:repeat>
+    </div>
+  </h:form>
+</cc:implementation>
+</html>

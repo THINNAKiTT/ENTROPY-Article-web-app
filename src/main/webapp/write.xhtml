@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:p="primefaces"
+>
+<f:metadata>
+  <f:viewParam name="id" value="#{editorBean.id}" />
+  <f:viewAction action="#{userSessionBean.requireLogin}" />
+  <f:viewAction action="#{editorBean.load}" />
+</f:metadata>
+
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title">#{editorBean.editing ? 'Edit article' : 'Write'} - Entropy</ui:define>
+
+  <ui:define name="content">
+    <h:form id="editor">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+
+        <p:card>
+          <f:facet name="title">#{editorBean.editing ? 'Edit article' : 'Write something'}</f:facet>
+
+          <div class="mt-2 flex flex-col gap-5">
+            <div class="flex flex-col gap-2">
+              <p:outputLabel for="title" value="Title" />
+              <p:inputText id="title" value="#{editorBean.article.title}" maxlength="200" styleClass="write-title w-full" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <p:outputLabel for="content" value="Article" />
+              <p:inputTextarea id="content" value="#{editorBean.article.content}" rows="22" autoResize="false" styleClass="write-body w-full" />
+              <small class="muted">Plain text. A blank line starts a new paragraph.</small>
+            </div>
+          </div>
+        </p:card>
+
+        <aside class="grid content-start gap-6 xl:sticky xl:top-4 xl:self-start">
+          <p:card>
+            <f:facet name="title">Publish</f:facet>
+
+            <div class="flex flex-col gap-5">
+              <div class="flex flex-col gap-2">
+                <p:outputLabel for="tags" value="Topics" />
+                <p:inputText id="tags" value="#{editorBean.article.tags}" placeholder="java, databases, opinion" styleClass="w-full" />
+                <small class="muted">Separate topics with commas. Up to 8.</small>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <p:commandButton value="#{editorBean.article.published ? 'Update article' : 'Publish'}" icon="pi pi-send"
+                                 action="#{editorBean.publish}" ajax="false" styleClass="w-full" />
+                <p:commandButton value="#{editorBean.article.published ? 'Move to drafts' : 'Save draft'}" icon="pi pi-save"
+                                 action="#{editorBean.saveDraft}" ajax="false" styleClass="ui-button-outlined ui-button-secondary w-full" />
+                <p:button href="#{nav.home}" value="Cancel" icon="pi pi-times" styleClass="ui-button-flat ui-button-secondary w-full" />
+              </div>
+
+              <ui:fragment rendered="#{editorBean.editing}">
+                <p:divider />
+                <p:commandButton value="Delete article" icon="pi pi-trash" action="#{editorBean.delete}" process="@this" update=":growl"
+                                 styleClass="ui-button-outlined ui-button-danger w-full">
+                  <p:confirm header="Delete article" message="Delete this article and all of its comments?" icon="pi pi-exclamation-triangle" />
+                </p:commandButton>
+              </ui:fragment>
+            </div>
+          </p:card>
+        </aside>
+      </div>
+    </h:form>
+  </ui:define>
+</ui:composition>
+</html>

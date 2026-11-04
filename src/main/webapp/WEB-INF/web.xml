@@ -7,11 +7,18 @@
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
     </context-param>
+    <!-- the theme that ships inside the PrimeFaces 15 jar (folder primefaces-saga-blue) -->
+    <context-param>
+        <param-name>primefaces.THEME</param-name>
+        <param-value>saga-blue</param-value>
+    </context-param>
     <session-config>
         <session-timeout>30</session-timeout>
         <cookie-config>
             <http-only>true</http-only>
         </cookie-config>
+        <!-- keep the session id in the cookie only, so ";jsessionid=..." never shows up in addresses -->
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
     <welcome-file-list>
         <welcome-file>index.xhtml</welcome-file>
@@ -26,4 +33,20 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
+
+    <!-- fonts used by the PrimeFaces icons; without these GlassFish logs a warning for every request -->
+    <mime-mapping><extension>woff2</extension><mime-type>font/woff2</mime-type></mime-mapping>
+    <mime-mapping><extension>woff</extension><mime-type>font/woff</mime-type></mime-mapping>
+    <mime-mapping><extension>ttf</extension><mime-type>font/ttf</mime-type></mime-mapping>
+    <mime-mapping><extension>eot</extension><mime-type>application/vnd.ms-fontobject</mime-type></mime-mapping>
+    <mime-mapping><extension>svg</extension><mime-type>image/svg+xml</mime-type></mime-mapping>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <exception-type>jakarta.faces.application.ViewExpiredException</exception-type>
+        <location>/index.xhtml</location>
+    </error-page>
 </web-app>

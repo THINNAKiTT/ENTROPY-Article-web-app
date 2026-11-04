@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<!--
+  The Latest / Popular tabs above the home page lists.
+
+    <comp:feedTabs active="popular" />      active: "latest" or "popular"
+
+  Margins go on the form: the PrimeFaces theme overrides margins set on its own components.
+-->
+<cc:interface>
+  <cc:attribute name="active" required="true" />
+</cc:interface>
+
+<cc:implementation>
+  <h:form styleClass="mb-5">
+    <p:tabMenu activeIndex="#{cc.attrs.active == 'popular' ? 1 : 0}">
+      <p:menuitem value="Latest" icon="pi pi-clock" url="#{nav.home}" />
+      <p:menuitem value="Popular" icon="pi pi-chart-line" url="#{nav.popular}" />
+    </p:tabMenu>
+  </h:form>
+</cc:implementation>
+</html>

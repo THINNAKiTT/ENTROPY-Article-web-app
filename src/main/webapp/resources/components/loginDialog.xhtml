@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<!--
+  The "Log in" popup. It lives in the shared layout, so every page has it. Open it with
+  PF('loginDialog').show(). A successful log in reloads the current page.
+-->
+<cc:interface>
+</cc:interface>
+
+<cc:implementation>
+  <p:dialog header="Log in" widgetVar="loginDialog" modal="true" appendTo="@(body)" dynamic="false"
+            draggable="false" resizable="false" responsive="true" closeOnEscape="true"
+            showEffect="fade" hideEffect="fade" width="26rem">
+    <h:form id="loginForm" styleClass="flex flex-col gap-5">
+      <p class="muted text-sm">Welcome back.</p>
+
+      <div class="flex flex-col gap-2">
+        <p:outputLabel for="username" value="Username or email" />
+        <p:inputText id="username" value="#{userSessionBean.loginUsername}" styleClass="w-full" autocomplete="username" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <p:outputLabel for="password" value="Password" />
+        <p:password id="password" value="#{userSessionBean.loginPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="current-password" />
+      </div>
+
+      <p:defaultCommand target="loginButton" />
+      <p:commandButton id="loginButton" value="Log in" icon="pi pi-sign-in" action="#{userSessionBean.login}"
+                       process="@form" update="@form :growl" styleClass="w-full" />
+
+      <p class="muted text-center text-sm">
+        New here?
+        <a href="#" class="link font-semibold text-cold" onclick="PF('loginDialog').hide(); PF('signupDialog').show(); return false;">Create an account</a>
+      </p>
+    </h:form>
+  </p:dialog>
+</cc:implementation>
+</html>

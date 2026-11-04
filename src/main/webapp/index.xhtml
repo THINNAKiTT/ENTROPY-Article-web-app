@@ -3,21 +3,28 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:h="jakarta.faces.html"
   xmlns:f="jakarta.faces.core"
-  xmlns:p="primefaces"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:comp="jakarta.faces.composite/components"
 >
-<h:head>
-  <title>Entropy</title>
-  <h:outputStylesheet name="css/tailwind.css" />
-</h:head>
+<!-- Home: the newest articles. (/popular, /following, /saved, /search and /tag/... are pages of their own.) -->
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title">Entropy</ui:define>
 
-<h:body styleClass="p-0 m-0">
-  <div class="bg-blue-100 flex justify-end p-1.5">
+  <ui:define name="content">
+    <comp:feedLayout>
+      <comp:feedTabs active="latest" />
 
-    <p:sidebar widgetVar="sidebar3" position="top">
-        <h3>Top Sidebar</h3>
-    </p:sidebar>
-
-    <p:commandButton icon="pi pi-arrow-down" type="button" onclick="PF('sidebar3').show()" styleClass="mr-2" />
-  </div>
-</h:body>
+      <comp:articleGrid items="#{homeBean.articles}" owner="#{homeBean}">
+        <f:facet name="whenEmpty">
+          <h:panelGroup>
+            <comp:emptyState rendered="#{userSessionBean.loggedIn}" title="No articles yet."
+                             actionLabel="Write the first one" actionIcon="pi pi-pencil" actionHref="#{nav.write}" />
+            <comp:emptyState rendered="#{!userSessionBean.loggedIn}" title="No articles yet."
+                             actionLabel="Create an account to write" actionIcon="pi pi-user-plus" actionOnclick="PF('signupDialog').show()" />
+          </h:panelGroup>
+        </f:facet>
+      </comp:articleGrid>
+    </comp:feedLayout>
+  </ui:define>
+</ui:composition>
 </html>

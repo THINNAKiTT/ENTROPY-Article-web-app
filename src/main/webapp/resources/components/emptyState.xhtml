@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<!--
+  A centred card for "nothing here" and "not found" screens: an icon, a title, an optional hint
+  and an optional button.
+
+    <comp:emptyState icon="pi pi-users" title="Your feed is empty."
+                     text="Open an article and press Follow."
+                     actionLabel="Browse articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+
+  The button either goes to an address (actionHref) or runs a script (actionOnclick), for example
+  actionOnclick="PF('loginDialog').show()" to open the log in popup.
+  Spacing is on plain wrapper elements: the PrimeFaces theme overrides margins put on its own components.
+-->
+<cc:interface>
+  <cc:attribute name="icon" default="pi pi-inbox" />
+  <cc:attribute name="title" required="true" />
+  <cc:attribute name="text" />
+  <cc:attribute name="actionLabel" />
+  <cc:attribute name="actionIcon" />
+  <cc:attribute name="actionHref" />
+  <cc:attribute name="actionOnclick" />
+  <cc:attribute name="styleClass" default="" />
+</cc:interface>
+
+<cc:implementation>
+  <p:card styleClass="text-center #{cc.attrs.styleClass}">
+    <div class="py-6">
+      <div class="mb-3"><i class="#{cc.attrs.icon} muted" style="font-size: 2.25rem" /></div>
+      <p class="font-semibold"><h:outputText value="#{cc.attrs.title}" /></p>
+
+      <ui:fragment rendered="#{not empty cc.attrs.text}">
+        <p class="muted mx-auto mt-2 max-w-xl text-sm"><h:outputText value="#{cc.attrs.text}" /></p>
+      </ui:fragment>
+
+      <ui:fragment rendered="#{not empty cc.attrs.actionLabel and not empty cc.attrs.actionHref}">
+        <div class="mt-5">
+          <p:button href="#{cc.attrs.actionHref}" value="#{cc.attrs.actionLabel}" icon="#{cc.attrs.actionIcon}" />
+        </div>
+      </ui:fragment>
+      <ui:fragment rendered="#{not empty cc.attrs.actionLabel and not empty cc.attrs.actionOnclick}">
+        <div class="mt-5">
+          <p:button href="#" onclick="#{cc.attrs.actionOnclick}" value="#{cc.attrs.actionLabel}" icon="#{cc.attrs.actionIcon}" />
+        </div>
+      </ui:fragment>
+    </div>
+  </p:card>
+</cc:implementation>
+</html>
