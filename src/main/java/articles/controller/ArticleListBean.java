@@ -11,11 +11,6 @@ import likes.dao.LikeDao;
 import users.controller.UserSessionBean;
 import web.Faces;
 
-/**
- * Base class of every page that shows a grid of articles (home, popular, following, saved, search,
- * a topic, a profile). A page bean only says which query fills the list (fetch); the list itself and
- * the Like and Save buttons of the cards (see the articleGrid component) work the same everywhere.
- */
 public abstract class ArticleListBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -30,10 +25,8 @@ public abstract class ArticleListBean implements Serializable {
 
     private List<Article> articles;
 
-    /** The query behind this page's list. `viewerId` is null for a visitor who is not logged in. */
     protected abstract List<Article> fetch(Long viewerId) throws Exception;
 
-    /** The list, loaded the first time it is needed (EL asks for it several times per page). */
     public List<Article> getArticles() {
         if (articles == null) {
             try {
@@ -46,7 +39,6 @@ public abstract class ArticleListBean implements Serializable {
         return articles;
     }
 
-    /** Forget the loaded list, so the next render shows fresh numbers. */
     protected void refresh() {
         articles = null;
     }

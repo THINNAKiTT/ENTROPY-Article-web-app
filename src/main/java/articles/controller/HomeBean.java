@@ -5,7 +5,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import java.util.List;
 
-/** The home page (index.xhtml): the newest articles. */
 @Named("homeBean")
 @ViewScoped
 public class HomeBean extends ArticleListBean {

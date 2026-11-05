@@ -12,12 +12,11 @@ public class Comment implements Serializable {
     private Long id;
     private Long articleId;
     private Long userId;
-    private Long parentId; // null = top-level comment, otherwise a reply to that comment
+    private Long parentId;
     private String content;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // joined from users
     private String authorName;
     private String authorUsername;
 

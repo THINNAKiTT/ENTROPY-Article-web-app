@@ -10,7 +10,6 @@ import users.controller.UserSessionBean;
 import web.Faces;
 import web.Urls;
 
-/** Backs write.xhtml: write a new article, or edit one of your own (/write?id=5). */
 @Named("editorBean")
 @ViewScoped
 public class EditorBean implements Serializable {
@@ -24,10 +23,9 @@ public class EditorBean implements Serializable {
 
     private final ArticleDao dao = new ArticleDao();
 
-    private Long id;                          // from the address: empty = a new article
+    private Long id;
     private Article article = new Article();
 
-    /** viewAction (after requireLogin): loads the article when editing. */
     public void load() {
         Long me = userSession.getCurrentUserId();
         if (me == null) {
@@ -41,7 +39,7 @@ public class EditorBean implements Serializable {
         try {
             Article found = dao.findById(id, me);
             if (found == null || !me.equals(found.getAuthorId())) {
-                Faces.notFound(); // not there, or not yours
+                Faces.notFound();
                 return;
             }
             article = found;
@@ -103,7 +101,6 @@ public class EditorBean implements Serializable {
         }
 
         Faces.info(status.equals(Article.PUBLISHED) ? "Published" : "Draft saved", article.getTitle());
-        // a published article opens at its own address; a draft goes back to your profile, where drafts are listed
         Faces.redirect(status.equals(Article.PUBLISHED)
                 ? Urls.article(article.getSlug())
                 : Urls.profile(userSession.getCurrentUser().getUsername()));

@@ -6,10 +6,6 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-/**
- * Password hashing with a random salt (PBKDF2, built into the JDK).
- * Stored format: iterations$salt$hash   (all Base64, about 75 characters)
- */
 public final class Passwords {
 
     private static final int ITERATIONS = 65_536;
@@ -18,7 +14,6 @@ public final class Passwords {
 
     private Passwords() {}
 
-    /** Hashes a password for storing. Throws IllegalArgumentException for an empty password. */
     public static String hash(String password) {
         if (password == null || password.trim().isEmpty()) {
             throw new IllegalArgumentException("Password must not be empty");
@@ -31,7 +26,6 @@ public final class Passwords {
                 + Base64.getEncoder().encodeToString(hash);
     }
 
-    /** True if `password` is the one that produced `storedHash`. */
     public static boolean verify(String password, String storedHash) {
         if (password == null || password.isEmpty() || storedHash == null) {
             return false;
@@ -47,7 +41,7 @@ public final class Passwords {
             byte[] actual = pbkdf2(password, salt, iterations);
             return MessageDigest.isEqual(expected, actual);
         } catch (IllegalArgumentException e) {
-            return false; // malformed stored hash
+            return false;
         }
     }
 

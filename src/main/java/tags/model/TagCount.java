@@ -2,7 +2,6 @@ package tags.model;
 
 import java.io.Serializable;
 
-/** A tag and how many published articles use it. */
 public class TagCount implements Serializable {
     private static final long serialVersionUID = 1L;
 

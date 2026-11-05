@@ -8,19 +8,6 @@
   xmlns:p="primefaces"
   xmlns:comp="jakarta.faces.composite/components"
 >
-<!--
-  A grid of article cards, each with Like / Comments / Save buttons.
-
-    <comp:articleGrid items="#{homeBean.articles}" owner="#{homeBean}">
-      <f:facet name="whenEmpty">
-        <comp:emptyState title="Nothing saved yet." />      shown when there are no articles
-      </f:facet>
-    </comp:articleGrid>
-
-  items: the articles to show.
-  owner: the bean that has toggleLike(id) and toggleBookmark(id) (ArticleListBean).
-  whenEmpty facet: optional. Without it a plain "No articles here yet." card is shown.
--->
 <cc:interface>
   <cc:attribute name="items" required="true" />
   <cc:attribute name="owner" required="true" />
@@ -37,13 +24,11 @@
 
     <div class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
       <ui:repeat value="#{cc.attrs.items}" var="a">
-        <!-- the left rule shifts from blue-grey to orange as an article collects likes and comments -->
         <p:card style="border-left: 4px solid skyblue">
           <f:facet name="title">
             <h:outputLink value="#{nav.article(a.slug)}" styleClass="entry-link">
               <h:outputText value="#{a.title}" />
             </h:outputLink>
-            <!-- margins go on a plain span: the PrimeFaces theme overrides margins set on its own components -->
             <ui:fragment rendered="#{!a.published}">
               <span class="ml-2 align-middle"><p:tag value="Draft" severity="warning" /></span>
             </ui:fragment>
@@ -71,7 +56,6 @@
               <p:button href="#{nav.article(a.slug)}#comments" icon="pi pi-comment" value="#{a.commentCount}"
                         styleClass="ui-button-secondary ui-button-flat ui-button-sm" title="Comments" />
 
-              <!-- Save sits at the right edge: ml-auto on a plain span (not on the PrimeFaces button) -->
               <span class="ml-auto">
                 <p:commandButton action="#{cc.attrs.owner.toggleBookmark(a.id)}" process="@this" update="@form :growl"
                                  icon="#{a.bookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'}"

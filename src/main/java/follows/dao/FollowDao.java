@@ -23,7 +23,6 @@ public class FollowDao implements Serializable {
         }
     }
 
-    /** Following someone twice does nothing. Following yourself is refused. */
     public void follow(Long followerId, Long followingId) throws Exception {
         if (followerId.equals(followingId)) {
             throw new IllegalArgumentException("You cannot follow yourself");
@@ -43,13 +42,11 @@ public class FollowDao implements Serializable {
         return count("SELECT COUNT(*) FROM follows WHERE follower_id = ?", userId);
     }
 
-    /** People who follow `userId`, newest follower first. */
     public List<User> findFollowers(Long userId) throws Exception {
         return people("SELECT u.id, u.username, u.display_name, u.bio, u.avatar_url FROM follows f "
                     + "JOIN users u ON u.id = f.follower_id WHERE f.following_id = ? ORDER BY f.created_at DESC", userId);
     }
 
-    /** People `userId` follows, newest first. */
     public List<User> findFollowing(Long userId) throws Exception {
         return people("SELECT u.id, u.username, u.display_name, u.bio, u.avatar_url FROM follows f "
                     + "JOIN users u ON u.id = f.following_id WHERE f.follower_id = ? ORDER BY f.created_at DESC", userId);
@@ -72,7 +69,6 @@ public class FollowDao implements Serializable {
         }
     }
 
-    /** Never loads the password hash. */
     private List<User> people(String sql, Long userId) throws Exception {
         List<User> list = new ArrayList<>();
         try (Connection c = Db.connect(); PreparedStatement p = c.prepareStatement(sql)) {

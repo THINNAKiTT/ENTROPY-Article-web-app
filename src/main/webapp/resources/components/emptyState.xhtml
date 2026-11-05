@@ -6,18 +6,6 @@
   xmlns:cc="jakarta.faces.composite"
   xmlns:p="primefaces"
 >
-<!--
-  A centred card for "nothing here" and "not found" screens: an icon, a title, an optional hint
-  and an optional button.
-
-    <comp:emptyState icon="pi pi-users" title="Your feed is empty."
-                     text="Open an article and press Follow."
-                     actionLabel="Browse articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
-
-  The button either goes to an address (actionHref) or runs a script (actionOnclick), for example
-  actionOnclick="PF('loginDialog').show()" to open the log in popup.
-  Spacing is on plain wrapper elements: the PrimeFaces theme overrides margins put on its own components.
--->
 <cc:interface>
   <cc:attribute name="icon" default="pi pi-inbox" />
   <cc:attribute name="title" required="true" />

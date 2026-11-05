@@ -11,7 +11,6 @@
   <f:viewParam name="q" value="#{searchBean.q}" />
 </f:metadata>
 
-<!-- /search/some%20words: search results. The search box in the header sends you here. -->
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
   <ui:define name="title">Search - Entropy</ui:define>
 
@@ -21,14 +20,14 @@
         <h1 class="text-2xl font-bold tracking-tight">
           Results for &#8220;<h:outputText value="#{searchBean.q}" />&#8221;
         </h1>
-        <p:button href="#{nav.home}" value="Show everything" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
+        <p:button href="#{nav.home}" value="Clear tag" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
       </div>
 
       <comp:articleGrid items="#{searchBean.articles}" owner="#{searchBean}">
         <f:facet name="whenEmpty">
           <comp:emptyState icon="pi pi-search" title="Nothing matches that."
                            text="Try a different word, or look at everything."
-                           actionLabel="Show everything" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+                           actionLabel="Clear tags" actionIcon="pi pi-book" actionHref="#{nav.home}" />
         </f:facet>
       </comp:articleGrid>
     </comp:feedLayout>

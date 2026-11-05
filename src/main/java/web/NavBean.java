@@ -4,7 +4,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 
-/** Gives the pages their addresses: &lt;h:outputLink value="#{nav.article(a.slug)}"&gt; and so on. */
 @Named("nav")
 @ApplicationScoped
 public class NavBean {

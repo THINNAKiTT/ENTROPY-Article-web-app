@@ -26,7 +26,6 @@
     <ui:fragment rendered="#{profileBean.user != null}">
       <div class="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
 
-        <!-- who this is -->
         <aside class="lg:sticky lg:top-4 lg:self-start">
           <p:card>
             <h:form id="head" styleClass="flex flex-col items-start gap-4">
@@ -47,7 +46,6 @@
                 <span><strong>#{profileBean.followingCount}</strong> <span class="muted">following</span></span>
               </div>
 
-              <!-- someone else's profile: follow / unfollow -->
               <p:commandButton value="#{profileBean.following ? 'Following' : 'Follow'}"
                                icon="#{profileBean.following ? 'pi pi-check' : 'pi pi-user-plus'}"
                                action="#{profileBean.toggleFollow}" process="@this" update="@form :growl"
@@ -55,7 +53,6 @@
                                styleClass="#{profileBean.following ? 'ui-button-outlined ui-button-secondary' : ''}"
                                title="#{profileBean.following ? 'Click to unfollow' : 'Follow to see their articles in your feed'}" />
 
-              <!-- your own profile: write, or edit your details in a popup -->
               <ui:fragment rendered="#{profileBean.ownProfile}">
                 <div class="flex flex-wrap gap-2">
                   <p:button href="#{nav.write}" value="Write" icon="pi pi-pencil" />
@@ -68,7 +65,6 @@
           </p:card>
         </aside>
 
-        <!-- what they've written, who follows them -->
         <section class="min-w-0">
           <h:form id="profileTabs" styleClass="mb-5">
             <p:tabMenu activeIndex="#{profileBean.tabIndex}">
@@ -78,7 +74,6 @@
             </p:tabMenu>
           </h:form>
 
-          <!-- articles -->
           <ui:fragment rendered="#{profileBean.tabIndex == 0}">
             <comp:articleGrid items="#{profileBean.articles}" owner="#{profileBean}">
               <f:facet name="whenEmpty">
@@ -91,7 +86,6 @@
             </comp:articleGrid>
           </ui:fragment>
 
-          <!-- followers / following -->
           <ui:fragment rendered="#{profileBean.tabIndex == 1 or profileBean.tabIndex == 2}">
             <comp:emptyState rendered="#{empty profileBean.people}" icon="pi pi-users"
                              title="#{profileBean.tabIndex == 1 ? 'No followers yet.' : 'Not following anyone yet.'}" />
@@ -104,7 +98,6 @@
         </section>
       </div>
 
-      <!-- the "Edit profile" popup (your own profile only). Its fields are a copy, so a rejected save changes nothing. -->
       <p:dialog header="Edit profile" widgetVar="settingsDialog" modal="true" appendTo="@(body)" dynamic="false"
                 draggable="false" resizable="false" responsive="true" closeOnEscape="true"
                 showEffect="fade" hideEffect="fade" width="30rem" rendered="#{profileBean.ownProfile}">

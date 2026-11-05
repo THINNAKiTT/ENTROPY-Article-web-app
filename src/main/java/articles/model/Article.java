@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import util.Texts;
 
-/** A row of the `articles` table, plus the numbers and flags the pages show next to it. */
 public class Article implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
@@ -22,18 +21,17 @@ public class Article implements Serializable {
     private String slug;
     private String content;
     private String status = DRAFT;
-    private String tags; // comma separated tag names, e.g. "java, jsf"
+    private String tags;
     private Timestamp publishedAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // filled in by ArticleDao when it joins other tables (not columns of `articles`)
     private String authorUsername;
     private String authorName;
     private int likeCount;
     private int commentCount;
-    private boolean liked;       // by the person looking at it
-    private boolean bookmarked;  // by the person looking at it
+    private boolean liked;
+    private boolean bookmarked;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -83,8 +81,6 @@ public class Article implements Serializable {
     public boolean isBookmarked() { return bookmarked; }
     public void setBookmarked(boolean bookmarked) { this.bookmarked = bookmarked; }
 
-    // ---- helpers used by the pages
-
     public boolean isPublished() {
         return PUBLISHED.equals(status);
     }
@@ -93,7 +89,6 @@ public class Article implements Serializable {
         return Texts.excerpt(content, 220);
     }
 
-    /** Reading time at 200 words a minute, rounded up: 1-200 words = 1 min, 201-400 = 2 min, ... */
     public int getReadingMinutes() {
         if (content == null || content.isBlank()) {
             return 1;
@@ -102,12 +97,10 @@ public class Article implements Serializable {
         return Math.max(1, (int) Math.ceil(words / 200.0));
     }
 
-    /** "1 min read", "5 min read" ... */
     public String getReadingTime() {
         return getReadingMinutes() + " min read";
     }
 
-    /** Publish date, or the creation date for drafts. */
     public String getDate() {
         Timestamp t = publishedAt != null ? publishedAt : createdAt;
         return t == null ? "" : t.toLocalDateTime().format(DATE);

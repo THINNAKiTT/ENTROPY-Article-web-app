@@ -11,7 +11,6 @@
   <f:viewParam name="slug" value="#{tagBean.slug}" />
 </f:metadata>
 
-<!-- /tag/some-topic: the articles with a topic. -->
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
   <ui:define name="title"><h:outputText value="#{tagBean.name}" /> - Entropy</ui:define>
 
@@ -19,13 +18,13 @@
     <comp:feedLayout>
       <div class="mb-5 flex flex-wrap items-center gap-3">
         <h1 class="text-2xl font-bold tracking-tight">Topic: <h:outputText value="#{tagBean.name}" /></h1>
-        <p:button href="#{nav.home}" value="Show everything" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
+        <p:button href="#{nav.home}" value="Clear tag" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
       </div>
 
       <comp:articleGrid items="#{tagBean.articles}" owner="#{tagBean}">
         <f:facet name="whenEmpty">
           <comp:emptyState icon="pi pi-tag" title="No articles with this topic yet."
-                           actionLabel="Show everything" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+                           actionLabel="Clear tag" actionIcon="pi pi-book" actionHref="#{nav.home}" />
         </f:facet>
       </comp:articleGrid>
     </comp:feedLayout>

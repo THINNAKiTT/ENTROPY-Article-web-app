@@ -7,7 +7,6 @@
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
     </context-param>
-    <!-- the theme that ships inside the PrimeFaces 15 jar (folder primefaces-saga-blue) -->
     <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>saga-blue</param-value>
@@ -17,7 +16,6 @@
         <cookie-config>
             <http-only>true</http-only>
         </cookie-config>
-        <!-- keep the session id in the cookie only, so ";jsessionid=..." never shows up in addresses -->
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
     <welcome-file-list>
@@ -34,7 +32,6 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 
-    <!-- fonts used by the PrimeFaces icons; without these GlassFish logs a warning for every request -->
     <mime-mapping><extension>woff2</extension><mime-type>font/woff2</mime-type></mime-mapping>
     <mime-mapping><extension>woff</extension><mime-type>font/woff</mime-type></mime-mapping>
     <mime-mapping><extension>ttf</extension><mime-type>font/ttf</mime-type></mime-mapping>

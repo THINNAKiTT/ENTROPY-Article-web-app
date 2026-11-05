@@ -15,13 +15,11 @@ import tags.model.TagCount;
 import util.Db;
 import util.Texts;
 
-/** Tags, and the links between tags and articles. */
 public class TagDao implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final int MAX_TAGS_PER_ARTICLE = 8;
 
-    /** The most used tags among published articles. */
     public List<TagCount> popular(int limit) throws Exception {
         String sql = "SELECT t.name, t.slug, COUNT(*) AS cnt FROM tags t "
                    + "JOIN article_tags x ON x.tag_id = t.id "
@@ -39,7 +37,6 @@ public class TagDao implements Serializable {
         return list;
     }
 
-    /** The display name of a tag ("c++ tips") from its slug ("c-tips"), or null if there is no such tag. */
     public String nameOf(String slug) throws Exception {
         try (Connection c = Db.connect(); PreparedStatement p = c.prepareStatement("SELECT name FROM tags WHERE slug = ?")) {
             p.setString(1, Texts.slugify(slug));
@@ -49,10 +46,6 @@ public class TagDao implements Serializable {
         }
     }
 
-    /**
-     * Gives an article exactly the tags named in `csv` ("java, jsf"), creating tags that don't exist yet.
-     * Runs on the caller's connection so it is part of the caller's transaction (saving the article).
-     */
     public void replaceTagsOf(Connection c, Long articleId, String csv) throws SQLException {
         try (PreparedStatement p = c.prepareStatement("DELETE FROM article_tags WHERE article_id = ?")) {
             p.setLong(1, articleId);
@@ -68,7 +61,6 @@ public class TagDao implements Serializable {
         }
     }
 
-    /** "Java, #JSF ,, java" becomes ["java", "jsf"]: lower case, no duplicates, at most 8. */
     public static List<String> parse(String csv) {
         Set<String> names = new LinkedHashSet<>();
         if (csv != null) {

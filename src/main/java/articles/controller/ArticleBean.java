@@ -16,7 +16,6 @@ import users.model.User;
 import web.Faces;
 import web.Urls;
 
-/** Backs article.xhtml: one article, its writer, and the Like, Save, Follow and Delete buttons. (Comments: CommentsBean.) */
 @Named("articleBean")
 @ViewScoped
 public class ArticleBean implements Serializable {
@@ -33,12 +32,11 @@ public class ArticleBean implements Serializable {
     private final LikeDao likeDao = new LikeDao();
     private final BookmarkDao bookmarkDao = new BookmarkDao();
 
-    private String slug;            // from the address
+    private String slug;
     private Article article;
-    private User writer;            // for the card beside the article
+    private User writer;
     private boolean followingWriter;
 
-    /** viewAction: loads the article, or answers 404 if it doesn't exist (or is someone else's draft). */
     public void load() {
         try {
             article = slug == null ? null : articleDao.findBySlug(slug, userSession.getCurrentUserId());
@@ -54,8 +52,6 @@ public class ArticleBean implements Serializable {
             Faces.error("Could not load the article", e.getMessage());
         }
     }
-
-    // ---- reacting to the article
 
     public String toggleLike() {
         Long me = userSession.getCurrentUserId();
@@ -124,8 +120,6 @@ public class ArticleBean implements Serializable {
         }
         return null;
     }
-
-    // ---- helpers
 
     public boolean isAuthor() {
         Long me = userSession.getCurrentUserId();

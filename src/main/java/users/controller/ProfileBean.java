@@ -14,7 +14,6 @@ import users.model.User;
 import util.Texts;
 import web.Faces;
 
-/** Backs profile.xhtml (/@username): a person's articles, followers and following, and the "Edit profile" popup. */
 @Named("profileBean")
 @ViewScoped
 public class ProfileBean extends ArticleListBean {
@@ -23,12 +22,12 @@ public class ProfileBean extends ArticleListBean {
     private final UserDao userDao = new UserDao();
     private final FollowDao followDao = new FollowDao();
 
-    private String username;           // from the address: /@username
-    private Long userId;               // that user's id, looked up from the username
-    private String tab = "articles";   // from the address: /@username/followers ...
+    private String username;
+    private Long userId;
+    private String tab = "articles";
 
     private User user;
-    private User editUser = new User(); // what the "Edit profile" popup is bound to: a copy of `user`
+    private User editUser = new User();
     private int articleCount;
     private int followersCount;
     private int followingCount;
@@ -37,7 +36,6 @@ public class ProfileBean extends ArticleListBean {
 
     private List<User> people;
 
-    /** viewAction: loads the profile of /@username, or answers 404. */
     public void init() {
         Long me = userSession.getCurrentUserId();
         if (Texts.isBlank(username)) {
@@ -54,7 +52,7 @@ public class ProfileBean extends ArticleListBean {
                 return;
             }
             userId = user.getId();
-            username = user.getUsername(); // as stored, in case the address used different capital letters
+            username = user.getUsername();
             ownProfile = Objects.equals(userId, me);
             loadCounts(me);
         } catch (Exception e) {
@@ -62,7 +60,6 @@ public class ProfileBean extends ArticleListBean {
         }
     }
 
-    /** The articles on this profile: everything they wrote (drafts too, if it is your own profile). */
     @Override
     protected List<Article> fetch(Long viewerId) throws Exception {
         return articleDao.findByAuthor(userId, ownProfile, viewerId);
@@ -74,8 +71,6 @@ public class ProfileBean extends ArticleListBean {
         followingCount = followDao.countFollowing(userId);
         following = me != null && !ownProfile && followDao.isFollowing(me, userId);
     }
-
-    // ---- follow
 
     public String toggleFollow() {
         Long me = userSession.getCurrentUserId();
@@ -101,13 +96,6 @@ public class ProfileBean extends ArticleListBean {
         return null;
     }
 
-    // ---- the "Edit profile" popup
-
-    /**
-     * Called when "Edit profile" is clicked, just before the popup opens: copies your current details
-     * into editUser, which is what the popup's fields are bound to. Cancelling or a rejected save
-     * therefore never changes what the profile page shows.
-     */
     public void startEdit() {
         Long me = userSession.getCurrentUserId();
         if (user == null || me == null || !Objects.equals(user.getId(), me)) {
@@ -120,9 +108,7 @@ public class ProfileBean extends ArticleListBean {
         editUser.setAvatarUrl(user.getAvatarUrl());
     }
 
-    /** Saves the popup. On success the popup closes (the page checks the "saved" value we hand back). */
     public String updateProfile() {
-        // checked against the logged-in user right now, not against a flag set earlier
         Long me = userSession.getCurrentUserId();
         if (user == null || me == null || !Objects.equals(user.getId(), me) || !Objects.equals(editUser.getId(), me)) {
             Faces.error("Forbidden", "You can only edit your own profile.");
@@ -145,9 +131,9 @@ public class ProfileBean extends ArticleListBean {
         }
         try {
             userDao.update(editUser);
-            editUser.setRawPassword(null);                          // never keep the plain password around
-            user = userDao.findById(me);                            // what the page shows now
-            userSession.setCurrentUser(userDao.findById(me));       // and what the header shows
+            editUser.setRawPassword(null);
+            user = userDao.findById(me);
+            userSession.setCurrentUser(userDao.findById(me));
             Faces.info("Profile saved", "Your changes are live.");
             PrimeFaces.current().ajax().addCallbackParam("saved", true);
         } catch (Exception e) {
@@ -156,9 +142,6 @@ public class ProfileBean extends ArticleListBean {
         return null;
     }
 
-    // ---- followers / following lists
-
-    /** The people list for the "followers" or "following" tab. */
     public List<User> getPeople() {
         if (people == null) {
             try {
@@ -180,7 +163,6 @@ public class ProfileBean extends ArticleListBean {
         this.people = null;
     }
 
-    /** Position of the current tab in the page's tab menu (articles, followers, following). */
     public int getTabIndex() {
         return switch (tab) {
             case "followers" -> 1;

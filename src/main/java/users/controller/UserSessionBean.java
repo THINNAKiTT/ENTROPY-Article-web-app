@@ -13,7 +13,6 @@ import util.Texts;
 import web.Faces;
 import web.Urls;
 
-/** Who is logged in on this browser: log in, sign up and log out (the two popups in the layout call these). */
 @Named("userSessionBean")
 @SessionScoped
 public class UserSessionBean implements Serializable {
@@ -23,11 +22,9 @@ public class UserSessionBean implements Serializable {
 
     private User currentUser;
 
-    // what the log in popup is bound to
     private String loginUsername;
     private String loginPassword;
 
-    // what the sign up popup is bound to
     private User newUser = new User();
 
     public boolean isLoggedIn() {
@@ -38,7 +35,6 @@ public class UserSessionBean implements Serializable {
         return currentUser == null ? null : currentUser.getId();
     }
 
-    /** viewAction for pages that need an account: visitors go home, where the log in popup opens. */
     public String requireLogin() {
         if (!isLoggedIn()) {
             Faces.promptLogin("You need to log in to see that page.");
@@ -46,7 +42,6 @@ public class UserSessionBean implements Serializable {
         return null;
     }
 
-    /** Called from the log in popup. On success the page you were on is reloaded. */
     public String login() {
         try {
             User user = dao.authenticate(loginUsername, loginPassword);
@@ -56,7 +51,7 @@ public class UserSessionBean implements Serializable {
             }
             startSession(user);
             loginUsername = null;
-            loginPassword = null; // don't keep the plain password in the session
+            loginPassword = null;
             Faces.info("Login success", "Welcome, " + user.getDisplayName());
             Faces.reloadPage();
         } catch (Exception e) {
@@ -65,7 +60,6 @@ public class UserSessionBean implements Serializable {
         return null;
     }
 
-    /** Called from the sign up popup: checks the form, creates the account, logs in and reloads the page. */
     public String signup() {
         try {
             if (Texts.isBlank(newUser.getUsername()) || Texts.isBlank(newUser.getEmail()) || Texts.isBlank(newUser.getRawPassword())) {
@@ -119,16 +113,14 @@ public class UserSessionBean implements Serializable {
             String home = ec.getRequestContextPath() + Urls.home();
             ec.invalidateSession();
             try {
-                ec.redirect(home); // no message to carry over: the session (and its flash) is gone
+                ec.redirect(home);
             } catch (IOException ignored) {
-                // the browser is gone
             }
             ctx.responseComplete();
         }
         return null;
     }
 
-    /** Sets the logged-in user, and gives the session a new id so an old (stolen) id is useless. */
     private void startSession(User user) {
         FacesContext ctx = FacesContext.getCurrentInstance();
         if (ctx != null && ctx.getExternalContext().getRequest() instanceof HttpServletRequest request) {

@@ -6,7 +6,6 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import java.util.List;
 
-/** The following page (following.xhtml): new articles from the writers you follow. */
 @Named("followingBean")
 @ViewScoped
 public class FollowingBean extends ArticleListBean {

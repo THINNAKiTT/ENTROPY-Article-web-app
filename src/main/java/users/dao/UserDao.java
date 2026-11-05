@@ -25,7 +25,6 @@ public class UserDao implements Serializable {
         return findOne("SELECT * FROM users WHERE email = ?", email);
     }
 
-    /** Creates the user and returns the new id. Throws IllegalArgumentException if the password is empty. */
     public Long insert(User user) throws Exception {
         String hashed = Passwords.hash(user.getRawPassword());
         String sql = "INSERT INTO users(username, email, password_hash, display_name, bio, avatar_url) VALUES(?, ?, ?, ?, ?, ?)";
@@ -44,7 +43,6 @@ public class UserDao implements Serializable {
         }
     }
 
-    /** Updates display name, bio and picture, and the password too if rawPassword is set. */
     public void update(User user) throws Exception {
         boolean changePassword = user.getRawPassword() != null && !user.getRawPassword().trim().isEmpty();
         String sql = changePassword
@@ -64,7 +62,6 @@ public class UserDao implements Serializable {
         }
     }
 
-    /** Removes the user and, through the database's cascades, their articles, comments, likes and follows. */
     public void delete(Long id) throws Exception {
         try (Connection c = Db.connect(); PreparedStatement p = c.prepareStatement("DELETE FROM users WHERE id = ?")) {
             p.setLong(1, id);
@@ -72,7 +69,6 @@ public class UserDao implements Serializable {
         }
     }
 
-    /** The user whose username or email and password match, or null. */
     public User authenticate(String usernameOrEmail, String password) throws Exception {
         User user = findByUsername(usernameOrEmail);
         if (user == null) {

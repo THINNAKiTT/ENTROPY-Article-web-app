@@ -6,7 +6,6 @@
   xmlns:ui="jakarta.faces.facelets"
   xmlns:comp="jakarta.faces.composite/components"
 >
-<!-- /popular: the most liked and commented articles. -->
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
   <ui:define name="title">Popular - Entropy</ui:define>
 
@@ -17,8 +16,8 @@
       <comp:articleGrid items="#{popularBean.articles}" owner="#{popularBean}">
         <f:facet name="whenEmpty">
           <comp:emptyState icon="pi pi-chart-line" title="Nothing is popular yet."
-                           text="Likes and comments on articles decide what shows up here."
-                           actionLabel="See the latest articles" actionIcon="pi pi-clock" actionHref="#{nav.home}" />
+                           text="Nothing Here!"
+                           actionLabel="See articles" actionIcon="pi pi-clock" actionHref="#{nav.home}" />
         </f:facet>
       </comp:articleGrid>
     </comp:feedLayout>

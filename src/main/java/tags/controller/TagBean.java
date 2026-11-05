@@ -7,7 +7,6 @@ import jakarta.inject.Named;
 import java.util.List;
 import tags.dao.TagDao;
 
-/** A topic page (tag.xhtml, /tag/some-topic): the articles with that tag. */
 @Named("tagBean")
 @ViewScoped
 public class TagBean extends ArticleListBean {
@@ -15,8 +14,8 @@ public class TagBean extends ArticleListBean {
 
     private final TagDao tagDao = new TagDao();
 
-    private String slug;   // from the address
-    private String name;   // the tag's real name, looked up from the slug
+    private String slug;
+    private String name;
 
     @Override
     protected List<Article> fetch(Long viewerId) throws Exception {
@@ -29,13 +28,11 @@ public class TagBean extends ArticleListBean {
         this.name = null;
     }
 
-    /** The topic by its real name ("c++ tips") rather than its address form ("c-tips"). */
     public String getName() {
         if (name == null && slug != null) {
             try {
                 name = tagDao.nameOf(slug);
             } catch (Exception e) {
-                // fall back to the slug below
             }
             if (name == null) {
                 name = slug;

@@ -14,10 +14,6 @@ import tags.dao.TagDao;
 import util.Db;
 import util.Texts;
 
-/**
- * Articles: reading them in the different lists the site shows, and creating, editing and deleting them.
- * (Their tags, likes, bookmarks and comments have their own DAOs; the queries here only count or join them.)
- */
 public class ArticleDao implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -27,10 +23,6 @@ public class ArticleDao implements Serializable {
 
     private final TagDao tagDao = new TagDao();
 
-    /**
-     * One query for everything a list or page needs. The first two `?` are the viewer id
-     * (for the liked / bookmarked flags), so every caller passes the viewer first.
-     */
     private static final String SELECT =
         "SELECT a.*, u.username AS author_username, u.display_name AS author_name, "
       + " (SELECT COUNT(*) FROM article_likes l WHERE l.article_id = a.id) AS like_count, "
@@ -40,8 +32,6 @@ public class ArticleDao implements Serializable {
       + " (SELECT GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') FROM article_tags x "
       + "    JOIN tags t ON t.id = x.tag_id WHERE x.article_id = a.id) AS tag_list "
       + "FROM articles a JOIN users u ON u.id = a.author_id ";
-
-    // ---------------------------------------------------------------- one article
 
     public Article findById(Long id, Long viewerId) throws Exception {
         List<Article> found = query("a.id = ?", List.of(id), "a.id", 1, viewerId);
@@ -53,9 +43,6 @@ public class ArticleDao implements Serializable {
         return found.isEmpty() ? null : found.get(0);
     }
 
-    // ---------------------------------------------------------------- the lists
-
-    /** Published articles, newest first. `search` and `tag` are optional filters. */
     public List<Article> findPublished(String search, String tag, Long viewerId, int limit) throws Exception {
         StringBuilder where = new StringBuilder("a.status = 'PUBLISHED'");
         List<Object> params = new ArrayList<>();
@@ -73,30 +60,23 @@ public class ArticleDao implements Serializable {
         return query(where.toString(), params, "a.published_at DESC, a.id DESC", limit, viewerId);
     }
 
-    /**
-     * Published articles ordered by how much people reacted: a like counts 1, a comment counts 2
-     * (a comment takes more effort). Ties go to the newer article.
-     */
     public List<Article> findPopular(Long viewerId, int limit) throws Exception {
         return query("a.status = 'PUBLISHED'", List.of(),
                 "(like_count + 2 * comment_count) DESC, a.published_at DESC, a.id DESC", limit, viewerId);
     }
 
-    /** Published articles written by people `userId` follows. */
     public List<Article> findFromFollowed(Long userId, int limit) throws Exception {
         return query("a.status = 'PUBLISHED' AND a.author_id IN "
                    + "(SELECT following_id FROM follows WHERE follower_id = ?)",
                 List.of(userId), "a.published_at DESC, a.id DESC", limit, userId);
     }
 
-    /** Published articles that `userId` saved. */
     public List<Article> findSavedBy(Long userId) throws Exception {
         return query("a.status = 'PUBLISHED' AND EXISTS (SELECT 1 FROM bookmarks bm "
                    + "WHERE bm.article_id = a.id AND bm.user_id = ?)",
                 List.of(userId), "a.published_at DESC, a.id DESC", 100, userId);
     }
 
-    /** Everything one person wrote, newest first. Drafts only when asked for (it is their own profile). */
     public List<Article> findByAuthor(Long authorId, boolean includeDrafts, Long viewerId) throws Exception {
         String where = includeDrafts ? "a.author_id = ?" : "a.author_id = ? AND a.status = 'PUBLISHED'";
         return query(where, List.of(authorId), "COALESCE(a.published_at, a.created_at) DESC, a.id DESC", 100, viewerId);
@@ -112,9 +92,6 @@ public class ArticleDao implements Serializable {
         }
     }
 
-    // ---------------------------------------------------------------- writing
-
-    /** Creates the article (and its tags) and returns the new id. Sets the id and slug on `article`. */
     public Long insert(Article article) throws Exception {
         try (Connection c = Db.connect()) {
             c.setAutoCommit(false);
@@ -147,7 +124,6 @@ public class ArticleDao implements Serializable {
         }
     }
 
-    /** Updates title, content, status and tags. The slug (the article's address) never changes. */
     public void update(Article article) throws Exception {
         try (Connection c = Db.connect()) {
             c.setAutoCommit(false);
@@ -172,7 +148,6 @@ public class ArticleDao implements Serializable {
         }
     }
 
-    /** Likes, comments, bookmarks and tag links are removed by the database (ON DELETE CASCADE). */
     public void delete(Long id) throws Exception {
         try (Connection c = Db.connect(); PreparedStatement p = c.prepareStatement("DELETE FROM articles WHERE id = ?")) {
             p.setLong(1, id);
@@ -180,10 +155,7 @@ public class ArticleDao implements Serializable {
         }
     }
 
-    // ---------------------------------------------------------------- helpers
-
     private List<Article> query(String where, List<?> params, String orderBy, int limit, Long viewerId) throws Exception {
-        // `where` and `orderBy` are written in this class only; user input always goes through `?`
         String sql = SELECT + (where.isEmpty() ? "" : "WHERE " + where) + " ORDER BY " + orderBy + " LIMIT " + limit;
         List<Article> list = new ArrayList<>();
         try (Connection c = Db.connect(); PreparedStatement p = c.prepareStatement(sql)) {
@@ -228,11 +200,6 @@ public class ArticleDao implements Serializable {
         return a;
     }
 
-    /**
-     * The article's address: the title plus 8 random characters, e.g. "Hello world" becomes "hello-world-jdl2i53q".
-     * The random part makes every address different, even for articles with the same title, so there is no
-     * "-2" counter, and a title can never clash with a page name like "popular".
-     */
     private String newSlug(Connection c, String title) throws SQLException {
         String base = Texts.slugify(title);
         if (base.isEmpty()) {
@@ -243,7 +210,7 @@ public class ArticleDao implements Serializable {
         }
         for (int attempt = 0; attempt < 10; attempt++) {
             String slug = base + "-" + randomCode(CODE_LENGTH);
-            if (!slugExists(c, slug)) { // the UNIQUE key on articles.slug is the final guard
+            if (!slugExists(c, slug)) {
                 return slug;
             }
         }

@@ -12,10 +12,6 @@ import java.util.Objects;
 import users.controller.UserSessionBean;
 import web.Faces;
 
-/**
- * The conversation under an article: the comments and replies, the "add a comment" box and the
- * Reply and Delete buttons. ArticleBean tells it which article it is on (load).
- */
 @Named("commentsBean")
 @ViewScoped
 public class CommentsBean implements Serializable {
@@ -29,21 +25,18 @@ public class CommentsBean implements Serializable {
     private final CommentDao dao = new CommentDao();
 
     private Long articleId;
-    private Long articleAuthorId;                  // the writer may delete any comment under their article
+    private Long articleAuthorId;
     private List<Comment> thread = new ArrayList<>();
 
     private String newComment;
     private Long replyTo;
     private String replyToName;
 
-    /** Called by ArticleBean once it has found the article. */
     public void load(Long articleId, Long articleAuthorId) {
         this.articleId = articleId;
         this.articleAuthorId = articleAuthorId;
         reload();
     }
-
-    // ---- adding
 
     public String add() {
         Long me = userSession.getCurrentUserId();
@@ -68,7 +61,6 @@ public class CommentsBean implements Serializable {
             if (replyTo != null) {
                 Comment parent = dao.findById(replyTo);
                 if (parent != null && Objects.equals(parent.getArticleId(), articleId)) {
-                    // replies only go one level deep: a reply to a reply joins the same thread
                     comment.setParentId(parent.getParentId() != null ? parent.getParentId() : parent.getId());
                 }
             }
@@ -97,8 +89,6 @@ public class CommentsBean implements Serializable {
         replyToName = null;
     }
 
-    // ---- deleting
-
     public void delete(Long commentId) {
         try {
             Comment comment = dao.findById(commentId);
@@ -119,15 +109,11 @@ public class CommentsBean implements Serializable {
         }
     }
 
-    /** The comment's author and the article's author may delete it. */
     public boolean canDelete(Comment comment) {
         Long me = userSession.getCurrentUserId();
         return me != null && (me.equals(comment.getUserId()) || me.equals(articleAuthorId));
     }
 
-    // ---- the thread
-
-    /** Comments in reading order: each top-level comment followed by its replies. */
     private void reload() {
         if (articleId == null) {
             thread = new ArrayList<>();

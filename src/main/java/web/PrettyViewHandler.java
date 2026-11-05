@@ -5,11 +5,6 @@ import jakarta.faces.application.ViewHandlerWrapper;
 import jakarta.faces.context.FacesContext;
 import java.util.Map;
 
-/**
- * Forms post back to the address of the page. Without this they would post to "/article.xhtml",
- * and the browser would end up showing that address after a form submit. With it they post back to
- * the clean address the page was opened with. Registered in faces-config.xml.
- */
 public class PrettyViewHandler extends ViewHandlerWrapper {
 
     public PrettyViewHandler(ViewHandler wrapped) {

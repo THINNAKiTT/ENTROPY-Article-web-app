@@ -14,7 +14,6 @@ public class CommentDao implements Serializable {
         "SELECT c.*, u.username AS author_username, u.display_name AS author_name "
       + "FROM comments c JOIN users u ON u.id = c.user_id ";
 
-    /** All comments of an article, oldest first. */
     public List<Comment> findByArticle(Long articleId) throws Exception {
         List<Comment> list = new ArrayList<>();
         try (Connection c = Db.connect();
@@ -58,7 +57,6 @@ public class CommentDao implements Serializable {
         }
     }
 
-    /** Replies to this comment are removed by the database (ON DELETE CASCADE). */
     public void delete(Long id) throws Exception {
         try (Connection c = Db.connect();
              PreparedStatement p = c.prepareStatement("DELETE FROM comments WHERE id = ?")) {

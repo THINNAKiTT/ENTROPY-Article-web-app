@@ -10,7 +10,6 @@
   <f:viewAction action="#{userSessionBean.requireLogin}" />
 </f:metadata>
 
-<!-- /saved: the articles you saved. Needs an account. -->
 <ui:composition template="/WEB-INF/templates/layout.xhtml">
   <ui:define name="title">Saved articles - Entropy</ui:define>
 
@@ -21,7 +20,7 @@
       <comp:articleGrid items="#{savedBean.articles}" owner="#{savedBean}">
         <f:facet name="whenEmpty">
           <comp:emptyState icon="pi pi-bookmark" title="Nothing saved yet."
-                           text="Use Save under an article to keep it here."
+                           text="Nothing Here!"
                            actionLabel="Browse articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
         </f:facet>
       </comp:articleGrid>

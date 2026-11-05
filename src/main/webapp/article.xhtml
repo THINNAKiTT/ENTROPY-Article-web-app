@@ -25,7 +25,6 @@
     <ui:fragment rendered="#{articleBean.article != null}">
       <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
 
-        <!-- the article and its conversation -->
         <h:form id="articleForm" styleClass="grid content-start gap-6">
 
           <p:card>
@@ -75,7 +74,6 @@
             </f:facet>
           </p:card>
 
-          <!-- plain div: a JSF id inside a form would become "articleForm:comments" and break #comments links -->
           <div id="comments">
           <p:card>
             <f:facet name="title">#{commentsBean.count} #{commentsBean.count == 1 ? 'comment' : 'comments'}</f:facet>
@@ -134,7 +132,6 @@
           </div>
         </h:form>
 
-        <!-- about the writer -->
         <aside class="xl:sticky xl:top-4 xl:self-start">
           <p:card>
             <div class="flex items-center gap-3">

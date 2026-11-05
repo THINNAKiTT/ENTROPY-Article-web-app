@@ -1,13 +1,8 @@
 @import "tailwindcss/theme";
 @import "tailwindcss/utilities";
 
-@source "../../**/*.xhtml";
+@source "../.. *.xhtml";
 
-/*
-  PrimeFaces (theme saga-blue) styles the components: buttons, cards, inputs, menus, growl popups.
-  Tailwind only does what PrimeFaces doesn't: page layout (grid, flex, spacing), plus the few
-  Entropy touches below. Tailwind's preflight is not loaded, so it can't fight PrimeFaces.
-*/
 @theme {
   --color-frost: #F2F4F7;
   --color-ink: #161B26;
@@ -19,7 +14,6 @@
   --font-reading: "Source Serif 4", Georgia, "Times New Roman", serif;
 }
 
-/* ---- base ---- */
 body {
   margin: 0;
   background: var(--color-frost);
@@ -30,7 +24,6 @@ body {
 h1, h2, h3, p, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 a { color: inherit; text-decoration: none; }
-/* one typeface for the whole app, PrimeFaces widgets included */
 .ui-widget, .ui-widget .ui-widget, .ui-inputfield, .ui-button { font-family: var(--font-display); }
 .ui-card-title { font-family: var(--font-display); letter-spacing: -0.015em; line-height: 1.2; }
 .ui-card { box-shadow: 0 1px 2px rgb(22 27 38 / 0.06); }
@@ -39,7 +32,6 @@ a { color: inherit; text-decoration: none; }
   * { transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* ---- wordmark: the letters of "entropy" drift further out of line toward the end ---- */
 .wordmark {
   display: inline-flex;
   align-items: baseline;
@@ -57,12 +49,10 @@ a { color: inherit; text-decoration: none; }
 .wordmark span:nth-child(6) { transform: translateY(-3px) rotate(-9deg); margin-left: 0.06em; }
 .wordmark span:nth-child(7) { transform: translateY(5px) rotate(14deg); margin-left: 0.12em; color: #2196f3; }
 
-/* ---- text ---- */
 .page-title { font-size: clamp(1.9rem, 1.2rem + 2.2vw, 2.9rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; text-wrap: balance; }
 .excerpt { font-family: var(--font-reading); line-height: 1.65; color: #2A3142; }
 .muted { color: var(--color-muted); }
 
-/* the article is plain text: keep its line breaks, and keep lines at a comfortable length */
 .reading {
   font-family: var(--font-reading);
   font-size: 1.1875rem;
@@ -74,15 +64,11 @@ a { color: inherit; text-decoration: none; }
 }
 .comment-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
 
-/* inputs that hold the article text */
 .write-title.ui-inputfield { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
 .write-body.ui-inputfield { font-family: var(--font-reading); font-size: 1.125rem; line-height: 1.7; }
 
-/* the header is laid out with Tailwind; the PrimeFaces menubar inside it only holds the links,
-   so it must not draw its own bar (the selector is long to beat the theme's) */
 body .ui-menu.ui-menubar.app-nav { background: transparent; border: 0; padding: 0; }
 
-/* plain links that sit inside PrimeFaces cards */
 .link:hover { text-decoration: underline; }
 .entry-link { color: var(--color-ink); }
 .entry-link:hover { color: var(--color-cold); }
