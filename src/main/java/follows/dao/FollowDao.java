@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import users.dao.UserDao;
 import users.model.User;
 import util.Db;
 
@@ -43,12 +44,12 @@ public class FollowDao implements Serializable {
     }
 
     public List<User> findFollowers(Long userId) throws Exception {
-        return people("SELECT u.id, u.username, u.display_name, u.bio, u.avatar_url FROM follows f "
+        return people("SELECT u.id, u.username, u.display_name, u.bio, " + UserDao.AVATAR_FLAG + " FROM follows f "
                     + "JOIN users u ON u.id = f.follower_id WHERE f.following_id = ? ORDER BY f.created_at DESC", userId);
     }
 
     public List<User> findFollowing(Long userId) throws Exception {
-        return people("SELECT u.id, u.username, u.display_name, u.bio, u.avatar_url FROM follows f "
+        return people("SELECT u.id, u.username, u.display_name, u.bio, " + UserDao.AVATAR_FLAG + " FROM follows f "
                     + "JOIN users u ON u.id = f.following_id WHERE f.follower_id = ? ORDER BY f.created_at DESC", userId);
     }
 
@@ -80,7 +81,8 @@ public class FollowDao implements Serializable {
                     u.setUsername(rs.getString("username"));
                     u.setDisplayName(rs.getString("display_name"));
                     u.setBio(rs.getString("bio"));
-                    u.setAvatarUrl(rs.getString("avatar_url"));
+                    u.setHasAvatar(rs.getBoolean("has_avatar"));
+                    u.setAvatarVersion(rs.getLong("avatar_version"));
                     list.add(u);
                 }
             }

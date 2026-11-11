@@ -30,6 +30,18 @@ public final class Faces {
         }
     }
 
+    public static void flash(String key, Object value) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx != null) {
+            ctx.getExternalContext().getFlash().put(key, value);
+        }
+    }
+
+    public static String contextPath() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        return ctx == null ? "" : ctx.getExternalContext().getRequestContextPath();
+    }
+
     public static void redirect(String path) {
         FacesContext ctx = FacesContext.getCurrentInstance();
         if (ctx == null) {
@@ -53,7 +65,7 @@ public final class Faces {
             PrimeFaces.current().executeScript("PF('loginDialog').show()");
         } else {
             ctx.getExternalContext().getFlash().put("promptLogin", Boolean.TRUE);
-            redirect(Urls.home());
+            redirect(Urls.latest());
         }
     }
 
@@ -73,6 +85,9 @@ public final class Faces {
             int params = path.indexOf(';');
             if (params >= 0) {
                 path = path.substring(0, params);
+            }
+            if (request.getQueryString() != null) {
+                path += "?" + request.getQueryString();
             }
         } else {
             path = Urls.home();

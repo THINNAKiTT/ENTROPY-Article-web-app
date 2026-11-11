@@ -5,9 +5,9 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import java.util.List;
 
-@Named("homeBean")
+@Named("latestBean")
 @ViewScoped
-public class HomeBean extends ArticleListBean {
+public class LatestBean extends ArticleListBean {
     private static final long serialVersionUID = 1L;
 
     @Override

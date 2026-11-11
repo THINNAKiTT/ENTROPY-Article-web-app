@@ -26,7 +26,6 @@
       <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- Faces (Mojarra), CDI, Servlet etc. are all provided by GlassFish, so don't bundle them in the WAR -->
     <dependency>
         <groupId>jakarta.platform</groupId>
         <artifactId>jakarta.jakartaee-web-api</artifactId>
@@ -44,6 +43,11 @@
         <artifactId>primefaces</artifactId>
         <version>15.0.0</version>
         <classifier>jakarta</classifier>
+    </dependency>
+    <dependency>
+        <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+        <artifactId>owasp-java-html-sanitizer</artifactId>
+        <version>20240325.1</version>
     </dependency>
   </dependencies>
 

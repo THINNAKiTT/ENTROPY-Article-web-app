@@ -20,7 +20,7 @@
 
     <div class="mx-auto max-w-lg">
       <comp:emptyState rendered="#{profileBean.user == null}" icon="pi pi-user" title="That profile could not be found."
-                       actionLabel="Back to articles" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+                       actionLabel="Back to articles" actionIcon="pi pi-book" actionHref="#{nav.latest}" />
     </div>
 
     <ui:fragment rendered="#{profileBean.user != null}">
@@ -29,7 +29,7 @@
         <aside class="lg:sticky lg:top-4 lg:self-start">
           <p:card>
             <h:form id="head" styleClass="flex flex-col items-start gap-4">
-              <comp:userAvatar label="#{profileBean.user.initial}" imageUrl="#{profileBean.user.avatarUrl}" size="xlarge" />
+              <comp:userAvatar label="#{profileBean.user.initial}" imageUrl="#{profileBean.user.avatarSrc}" size="xlarge" />
 
               <div class="min-w-0">
                 <h1 class="text-2xl font-extrabold tracking-tight"><h:outputText value="#{profileBean.user.displayName}" /></h1>
@@ -100,32 +100,100 @@
 
       <p:dialog header="Edit profile" widgetVar="settingsDialog" modal="true" appendTo="@(body)" dynamic="false"
                 draggable="false" resizable="false" responsive="true" closeOnEscape="true"
-                showEffect="fade" hideEffect="fade" width="30rem" rendered="#{profileBean.ownProfile}">
-        <h:form id="settingsForm" styleClass="flex flex-col gap-5">
-          <div class="flex flex-col gap-2">
-            <p:outputLabel for="displayName" value="Display name" />
-            <p:inputText id="displayName" value="#{profileBean.editUser.displayName}" maxlength="100" styleClass="w-full" />
-          </div>
-          <div class="flex flex-col gap-2">
-            <p:outputLabel for="bio" value="Bio" />
-            <p:inputTextarea id="bio" value="#{profileBean.editUser.bio}" rows="4" autoResize="false" styleClass="w-full" />
-          </div>
-          <div class="flex flex-col gap-2">
-            <p:outputLabel for="avatar" value="Picture link" />
-            <p:inputText id="avatar" value="#{profileBean.editUser.avatarUrl}" maxlength="512" placeholder="https://" styleClass="w-full" />
-            <small class="muted">Optional. A link to an image, starting with https://</small>
-          </div>
+                width="34rem" rendered="#{profileBean.ownProfile}">
+        <h:form id="settingsForm" enctype="multipart/form-data">
+          <p:tabView>
+            <p:tab title="Profile">
+              <div class="flex flex-col gap-5 pt-2">
+                <div class="flex flex-col gap-2">
+                  <p:outputLabel for="displayName" value="Display name" />
+                  <p:inputText id="displayName" value="#{profileBean.editUser.displayName}" maxlength="100" styleClass="w-full" />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <p:outputLabel for="bio" value="Bio" />
+                  <p:inputTextarea id="bio" value="#{profileBean.editUser.bio}" rows="4" autoResize="false" styleClass="w-full" />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <span class="font-semibold">Profile picture</span>
+                  <div class="flex items-center gap-4">
+                    <h:panelGroup id="avatarPreview" layout="block">
+                      <comp:userAvatar label="#{profileBean.user.initial}" imageUrl="#{profileBean.user.avatarSrc}" size="xlarge" />
+                    </h:panelGroup>
+                    <div class="flex flex-col items-start gap-2">
+                      <p:fileUpload mode="advanced" auto="true" label="Upload picture" chooseIcon="pi pi-image" skinSimple="true" dragDrop="false"
+                                    accept="image/png,image/jpeg,image/gif" listener="#{profileBean.uploadAvatar}"
+                                    update="avatarPreview avatarActions :head :navForm:navUser :growl">
+                        <p:validateFile allowTypes="/(\.|\/)(gif|jpe?g|png)$/" sizeLimit="5242880" />
+                      </p:fileUpload>
+                      <h:panelGroup id="avatarActions" layout="block">
+                        <p:commandButton value="Remove picture" icon="pi pi-trash" action="#{profileBean.removeAvatar}" process="@this"
+                                         update="avatarPreview avatarActions :head :navForm:navUser :growl" rendered="#{profileBean.user.hasAvatar}"
+                                         styleClass="ui-button-flat ui-button-danger ui-button-sm" />
+                      </h:panelGroup>
+                    </div>
+                  </div>
+                  <small class="muted">PNG, JPEG or GIF up to 5 MB. It is cropped to a square.</small>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                  <p:commandButton value="Cancel" type="button" icon="pi pi-times" onclick="PF('settingsDialog').hide()"
+                                   styleClass="ui-button-flat ui-button-secondary" />
+                  <p:commandButton value="Save changes" icon="pi pi-check" action="#{profileBean.updateProfile}" process="@form"
+                                   update="@form :head :navForm:navUser :growl" oncomplete="if (args.saved) PF('settingsDialog').hide()" />
+                </div>
+              </div>
+            </p:tab>
+
+            <p:tab title="Account">
+              <div class="flex flex-col gap-5 pt-2">
+                <div class="flex flex-col gap-1">
+                  <span class="font-semibold">Email</span>
+                  <p><h:outputText value="#{profileBean.user.email}" /></p>
+                </div>
+
+                <div class="flex flex-col items-start gap-2">
+                  <span class="font-semibold">Password</span>
+                  <p:commandButton type="button" value="Change password" icon="pi pi-key" onclick="PF('passwordDialog').show()"
+                                   styleClass="ui-button-outlined ui-button-secondary" />
+                </div>
+
+                <p:divider />
+
+                <div class="flex flex-col items-start gap-2">
+                  <span class="font-semibold">Remove account</span>
+                  <small class="muted">This deletes your articles, comments, likes, saved articles and pictures for good.</small>
+                  <p:commandButton value="Remove account" icon="pi pi-trash" action="#{profileBean.deleteAccount}" process="@this" update=":growl"
+                                   styleClass="ui-button-outlined ui-button-danger">
+                    <p:confirm header="Remove account" message="Are you sure? Your account and everything you wrote will be deleted and this cannot be undone."
+                               icon="pi pi-exclamation-triangle" />
+                  </p:commandButton>
+                </div>
+              </div>
+            </p:tab>
+          </p:tabView>
+        </h:form>
+      </p:dialog>
+
+      <p:dialog header="Change password" widgetVar="passwordDialog" modal="true" appendTo="@(body)" dynamic="false"
+                draggable="false" resizable="false" responsive="true" closeOnEscape="true"
+                width="26rem" rendered="#{profileBean.ownProfile}">
+        <h:form id="passwordForm" styleClass="flex flex-col gap-5">
           <div class="flex flex-col gap-2">
             <p:outputLabel for="newPassword" value="New password" />
-            <p:password id="newPassword" value="#{profileBean.editUser.rawPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="new-password" />
-            <small class="muted">Leave empty to keep your current password.</small>
+            <p:password id="newPassword" value="#{profileBean.newPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="new-password" />
+            <small class="muted">At least 6 characters.</small>
+          </div>
+          <div class="flex flex-col gap-2">
+            <p:outputLabel for="confirmPassword" value="Verify new password" />
+            <p:password id="confirmPassword" value="#{profileBean.confirmPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="new-password" />
           </div>
 
+          <p:defaultCommand target="savePassword" />
           <div class="flex justify-end gap-2">
-            <p:commandButton value="Cancel" type="button" icon="pi pi-times" onclick="PF('settingsDialog').hide()"
+            <p:commandButton value="Cancel" type="button" icon="pi pi-times" onclick="PF('passwordDialog').hide()"
                              styleClass="ui-button-flat ui-button-secondary" />
-            <p:commandButton value="Save changes" icon="pi pi-check" action="#{profileBean.updateProfile}" process="@form"
-                             update="@form :head :navForm:navUser :growl" oncomplete="if (args.saved) PF('settingsDialog').hide()" />
+            <p:commandButton id="savePassword" value="Change password" icon="pi pi-check" action="#{profileBean.changePassword}" process="@form"
+                             update="@form :growl" oncomplete="if (args.saved) PF('passwordDialog').hide()" />
           </div>
         </h:form>
       </p:dialog>

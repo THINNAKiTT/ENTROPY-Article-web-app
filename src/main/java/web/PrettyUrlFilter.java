@@ -16,6 +16,7 @@ public class PrettyUrlFilter implements Filter {
 
     public static final String PRETTY_URL = "entropy.prettyUrl";
     public static final String PRETTY_VIEW = "entropy.prettyView";
+    public static final String REAL_URL = "entropy.realUrl";
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -44,6 +45,7 @@ public class PrettyUrlFilter implements Filter {
 
         int query = target.indexOf('?');
         request.setAttribute(PRETTY_URL, context + rawPath);
+        request.setAttribute(REAL_URL, context + target);
         request.setAttribute(PRETTY_VIEW, query < 0 ? target : target.substring(0, query));
         request.getRequestDispatcher(target).forward(req, res);
     }

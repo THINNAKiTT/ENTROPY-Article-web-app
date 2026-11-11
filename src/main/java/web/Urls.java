@@ -10,7 +10,7 @@ public final class Urls {
 
     private Urls() {}
 
-    private static final Set<String> PAGES = Set.of("popular", "following", "saved", "search", "write");
+    private static final Set<String> PAGES = Set.of("latest", "popular", "following", "saved", "search", "write");
 
     private static final Set<String> NOT_ARTICLES = Set.of("tag", "index", "article", "profile", "error", "layout");
 
@@ -21,6 +21,7 @@ public final class Urls {
     private static final Set<String> PROFILE_TABS = Set.of("followers", "following");
 
     public static String home()      { return "/"; }
+    public static String latest()    { return "/latest"; }
     public static String popular()   { return "/popular"; }
     public static String following() { return "/following"; }
     public static String saved()     { return "/saved"; }
@@ -51,7 +52,7 @@ public final class Urls {
         if (words.length() > MAX_SEARCH_LENGTH) {
             words = words.substring(0, MAX_SEARCH_LENGTH).trim();
         }
-        return words.isEmpty() ? home() : "/search/" + URLEncoder.encode(words, StandardCharsets.UTF_8).replace("+", "%20");
+        return words.isEmpty() ? latest() : "/search/" + URLEncoder.encode(words, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     public static String resolve(String path) {

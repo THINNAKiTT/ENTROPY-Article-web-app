@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import tags.dao.TagDao;
 import util.Db;
+import util.Html;
 import util.Texts;
 
 public class ArticleDao implements Serializable {
@@ -144,6 +146,28 @@ public class ArticleDao implements Serializable {
             } catch (Exception e) {
                 c.rollback();
                 throw e;
+            }
+        }
+    }
+
+    public void removeImageFromContent(Long articleId, Long imageId) throws Exception {
+        try (Connection c = Db.connect()) {
+            String content = null;
+            try (PreparedStatement p = c.prepareStatement("SELECT content FROM articles WHERE id = ?")) {
+                p.setLong(1, articleId);
+                try (ResultSet rs = p.executeQuery()) {
+                    if (rs.next()) {
+                        content = rs.getString(1);
+                    }
+                }
+            }
+            String cleaned = content == null ? null : Html.removeImages(content, Set.of(imageId));
+            if (cleaned != null && !cleaned.equals(content)) {
+                try (PreparedStatement p = c.prepareStatement("UPDATE articles SET content = ? WHERE id = ?")) {
+                    p.setString(1, cleaned);
+                    p.setLong(2, articleId);
+                    p.executeUpdate();
+                }
             }
         }
     }

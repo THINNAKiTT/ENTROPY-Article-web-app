@@ -19,7 +19,7 @@
 
     <div class="mx-auto max-w-lg">
       <comp:emptyState rendered="#{articleBean.article == null}" icon="pi pi-search" title="That article could not be found."
-                       actionLabel="Back to the latest articles" actionIcon="pi pi-arrow-left" actionHref="#{nav.home}" />
+                       actionLabel="Back to the latest articles" actionIcon="pi pi-arrow-left" actionHref="#{nav.latest}" />
     </div>
 
     <ui:fragment rendered="#{articleBean.article != null}">
@@ -46,7 +46,7 @@
 
             <p:divider />
 
-            <div class="reading"><h:outputText value="#{articleBean.article.content}" /></div>
+            <div class="reading"><h:outputText value="#{nav.body(articleBean.article.content)}" escape="false" /></div>
 
             <f:facet name="footer">
               <div class="flex flex-wrap items-center gap-1">
@@ -73,7 +73,7 @@
               </div>
             </f:facet>
           </p:card>
-
+          
           <div id="comments">
           <p:card>
             <f:facet name="title">#{commentsBean.count} #{commentsBean.count == 1 ? 'comment' : 'comments'}</f:facet>
@@ -135,7 +135,7 @@
         <aside class="xl:sticky xl:top-4 xl:self-start">
           <p:card>
             <div class="flex items-center gap-3">
-              <comp:userAvatar label="#{articleBean.writer.initial}" imageUrl="#{articleBean.writer.avatarUrl}" size="large" />
+              <comp:userAvatar label="#{articleBean.writer.initial}" imageUrl="#{articleBean.writer.avatarSrc}" size="large" />
               <div class="min-w-0">
                 <h:outputLink value="#{nav.profile(articleBean.writer.username)}" styleClass="link text-lg font-bold">
                   <h:outputText value="#{articleBean.writer.displayName}" />

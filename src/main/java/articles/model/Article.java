@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import util.Html;
 import util.Texts;
 
 public class Article implements Serializable {
@@ -86,14 +87,15 @@ public class Article implements Serializable {
     }
 
     public String getExcerpt() {
-        return Texts.excerpt(content, 220);
+        return Texts.excerpt(Html.text(content), 220);
     }
 
     public int getReadingMinutes() {
-        if (content == null || content.isBlank()) {
+        String text = Html.text(content);
+        if (text.isEmpty()) {
             return 1;
         }
-        int words = content.trim().split("\\s+").length;
+        int words = text.split("\\s+").length;
         return Math.max(1, (int) Math.ceil(words / 200.0));
     }
 

@@ -11,7 +11,7 @@
 <cc:implementation>
   <p:dialog header="Log in" widgetVar="loginDialog" modal="true" appendTo="@(body)" dynamic="false"
             draggable="false" resizable="false" responsive="true" closeOnEscape="true"
-            showEffect="fade" hideEffect="fade" width="26rem">
+            width="26rem">
     <h:form id="loginForm" styleClass="flex flex-col gap-5">
       <p class="muted text-sm">Welcome back.</p>
 
@@ -23,6 +23,8 @@
         <p:outputLabel for="password" value="Password" />
         <p:password id="password" value="#{userSessionBean.loginPassword}" toggleMask="true" feedback="false" styleClass="w-full" autocomplete="current-password" />
       </div>
+
+      <p:selectBooleanCheckbox value="#{userSessionBean.rememberMe}" itemLabel="Keep me logged in on this browser" />
 
       <p:defaultCommand target="loginButton" />
       <p:commandButton id="loginButton" value="Log in" icon="pi pi-sign-in" action="#{userSessionBean.login}"

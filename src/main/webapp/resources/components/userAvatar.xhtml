@@ -14,7 +14,7 @@
 <cc:implementation>
   <p:avatar label="#{cc.attrs.label}" shape="circle" dynamicColor="true" size="#{cc.attrs.size}" rendered="#{empty cc.attrs.imageUrl}" />
   <p:avatar shape="circle" size="#{cc.attrs.size}" rendered="#{not empty cc.attrs.imageUrl}">
-    <h:graphicImage url="#{cc.attrs.imageUrl}" alt="" styleClass="h-full w-full object-cover" />
+    <img src="#{nav.path(cc.attrs.imageUrl)}" alt="" class="h-full w-full object-cover" />
   </p:avatar>
 </cc:implementation>
 </html>

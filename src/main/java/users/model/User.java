@@ -13,7 +13,8 @@ public class User implements Serializable {
     private String rawPassword;
     private String displayName;
     private String bio;
-    private String avatarUrl;
+    private boolean hasAvatar;
+    private long avatarVersion;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -38,8 +39,15 @@ public class User implements Serializable {
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
 
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public boolean isHasAvatar() { return hasAvatar; }
+    public void setHasAvatar(boolean hasAvatar) { this.hasAvatar = hasAvatar; }
+
+    public long getAvatarVersion() { return avatarVersion; }
+    public void setAvatarVersion(long avatarVersion) { this.avatarVersion = avatarVersion; }
+
+    public String getAvatarSrc() {
+        return hasAvatar && id != null ? "/avatar/" + id + "?v=" + avatarVersion : null;
+    }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

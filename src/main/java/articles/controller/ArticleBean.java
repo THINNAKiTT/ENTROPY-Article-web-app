@@ -114,7 +114,7 @@ public class ArticleBean implements Serializable {
         try {
             articleDao.delete(article.getId());
             Faces.info("Deleted", "The article was deleted.");
-            Faces.redirect(Urls.home());
+            Faces.redirect(Urls.latest());
         } catch (Exception e) {
             Faces.error("Could not delete the article", e.getMessage());
         }

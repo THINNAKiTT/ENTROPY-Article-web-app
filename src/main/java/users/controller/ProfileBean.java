@@ -5,12 +5,16 @@ import articles.model.Article;
 import follows.dao.FollowDao;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.primefaces.PrimeFaces;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 import users.dao.UserDao;
 import users.model.User;
+import util.Images;
 import util.Texts;
 import web.Faces;
 
@@ -28,6 +32,8 @@ public class ProfileBean extends ArticleListBean {
 
     private User user;
     private User editUser = new User();
+    private String newPassword;
+    private String confirmPassword;
     private int articleCount;
     private int followersCount;
     private int followingCount;
@@ -105,7 +111,6 @@ public class ProfileBean extends ArticleListBean {
         editUser.setId(user.getId());
         editUser.setDisplayName(user.getDisplayName());
         editUser.setBio(user.getBio());
-        editUser.setAvatarUrl(user.getAvatarUrl());
     }
 
     public String updateProfile() {
@@ -118,28 +123,99 @@ public class ProfileBean extends ArticleListBean {
             Faces.warn("Name missing", "Your display name cannot be empty.");
             return null;
         }
-        String avatar = editUser.getAvatarUrl() == null ? "" : editUser.getAvatarUrl().trim();
-        if (!avatar.isEmpty() && !avatar.matches("(?i)https?://[^\\s\"'<>]+")) {
-            Faces.warn("Check the picture link", "The picture link must start with http:// or https:// and have no spaces or quotes.");
-            return null;
-        }
-        editUser.setAvatarUrl(avatar.isEmpty() ? null : avatar);
-        String newPassword = editUser.getRawPassword();
-        if (!Texts.isBlank(newPassword) && newPassword.length() < 6) {
-            Faces.warn("Password too short", "Use at least 6 characters.");
-            return null;
-        }
         try {
             userDao.update(editUser);
-            editUser.setRawPassword(null);
-            user = userDao.findById(me);
-            userSession.setCurrentUser(userDao.findById(me));
+            refreshUser(me);
             Faces.info("Profile saved", "Your changes are live.");
             PrimeFaces.current().ajax().addCallbackParam("saved", true);
         } catch (Exception e) {
             Faces.error("Could not save the profile", e.getMessage());
         }
         return null;
+    }
+
+    public String changePassword() {
+        Long me = userSession.getCurrentUserId();
+        if (user == null || me == null || !Objects.equals(user.getId(), me)) {
+            Faces.error("Forbidden", "You can only change your own password.");
+            return null;
+        }
+        if (Texts.isBlank(newPassword) || newPassword.length() < 6) {
+            Faces.warn("Password too short", "Use at least 6 characters.");
+            return null;
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            Faces.warn("Passwords do not match", "Type the same new password twice.");
+            return null;
+        }
+        try {
+            userDao.updatePassword(me, newPassword);
+            userSession.forgetAllLogins();
+            newPassword = null;
+            confirmPassword = null;
+            Faces.info("Password changed", "Use your new password next time you log in.");
+            PrimeFaces.current().ajax().addCallbackParam("saved", true);
+        } catch (Exception e) {
+            Faces.error("Could not change the password", e.getMessage());
+        }
+        return null;
+    }
+
+    public String deleteAccount() {
+        Long me = userSession.getCurrentUserId();
+        if (user == null || me == null || !Objects.equals(user.getId(), me)) {
+            Faces.error("Forbidden", "You can only remove your own account.");
+            return null;
+        }
+        try {
+            userDao.delete(me);
+        } catch (Exception e) {
+            Faces.error("Could not remove the account", e.getMessage());
+            return null;
+        }
+        return userSession.logout();
+    }
+
+    public void uploadAvatar(FileUploadEvent event) {
+        Long me = userSession.getCurrentUserId();
+        if (user == null || me == null || !Objects.equals(user.getId(), me)) {
+            Faces.error("Forbidden", "You can only change your own picture.");
+            return;
+        }
+        UploadedFile file = event.getFile();
+        if (file.getSize() > Images.MAX_UPLOAD_BYTES) {
+            Faces.warn("Picture too big", "Use a picture under 5 MB.");
+            return;
+        }
+        try {
+            userDao.saveAvatar(me, Images.avatar(file.getContent()));
+            refreshUser(me);
+            Faces.info("Picture saved", "Your new profile picture is live.");
+        } catch (IOException e) {
+            Faces.warn("Could not use that file", e.getMessage());
+        } catch (Exception e) {
+            Faces.error("Could not save the picture", e.getMessage());
+        }
+    }
+
+    public String removeAvatar() {
+        Long me = userSession.getCurrentUserId();
+        if (user == null || me == null || !Objects.equals(user.getId(), me)) {
+            return null;
+        }
+        try {
+            userDao.removeAvatar(me);
+            refreshUser(me);
+            Faces.info("Picture removed", "Your profile picture was removed.");
+        } catch (Exception e) {
+            Faces.error("Could not remove the picture", e.getMessage());
+        }
+        return null;
+    }
+
+    private void refreshUser(Long me) throws Exception {
+        user = userDao.findById(me);
+        userSession.setCurrentUser(userDao.findById(me));
     }
 
     public List<User> getPeople() {
@@ -172,6 +248,12 @@ public class ProfileBean extends ArticleListBean {
     }
 
     public User getUser() { return user; }
+    public String getNewPassword() { return newPassword; }
+    public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+
+    public String getConfirmPassword() { return confirmPassword; }
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+
     public User getEditUser() { return editUser; }
     public void setEditUser(User editUser) { this.editUser = editUser; }
 

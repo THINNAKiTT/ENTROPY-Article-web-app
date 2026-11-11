@@ -22,7 +22,7 @@
   <p:growl id="growl" showDetail="true" skipDetailIfEqualsSummary="true" life="4500" />
 
   <h:form id="confirmForm">
-    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="26rem">
+    <p:confirmDialog global="true" responsive="true" width="26rem">
       <p:commandButton value="Yes" type="button" icon="pi pi-check" styleClass="ui-confirmdialog-yes" />
       <p:commandButton value="No" type="button" icon="pi pi-times" styleClass="ui-confirmdialog-no ui-button-flat" />
     </p:confirmDialog>
@@ -30,6 +30,9 @@
 
   <comp:loginDialog />
   <comp:signupDialog />
+  <ui:fragment rendered="#{not empty flash.clearDraft}">
+    <script>try { localStorage.removeItem('entropy.draft.#{flash.clearDraft}'); } catch (e) {}</script>
+  </ui:fragment>
   <ui:fragment rendered="#{flash.promptLogin}">
     <script>$(function(){ PF('loginDialog').show(); });</script>
   </ui:fragment>
@@ -42,7 +45,7 @@
           <h:outputLink value="#{nav.home}" styleClass="wordmark" title="Entropy home"><span>e</span><span>n</span><span>t</span><span>r</span><span>o</span><span>p</span><span>y</span></h:outputLink>
         </f:facet>
 
-        <p:menuitem value="Article" icon="pi pi-book" url="#{nav.home}" />
+        <p:menuitem value="Article" icon="pi pi-book" url="#{nav.latest}" />
         <p:menuitem value="Following" icon="pi pi-users" url="#{nav.following}" rendered="#{userSessionBean.loggedIn}" />
         <p:menuitem value="Saved" icon="pi pi-bookmark" url="#{nav.saved}" rendered="#{userSessionBean.loggedIn}" />
       </p:menubar>
@@ -63,7 +66,7 @@
         <h:panelGroup id="navUser" layout="block" rendered="#{userSessionBean.loggedIn}">
           <h:outputLink value="#{nav.profile(userSessionBean.currentUser.username)}" title="Your profile"
                         styleClass="flex items-center gap-2 font-semibold">
-            <comp:userAvatar label="#{userSessionBean.currentUser.initial}" imageUrl="#{userSessionBean.currentUser.avatarUrl}" />
+            <comp:userAvatar label="#{userSessionBean.currentUser.initial}" imageUrl="#{userSessionBean.currentUser.avatarSrc}" />
             <span class="hidden 2xl:inline"><h:outputText value="#{userSessionBean.currentUser.displayName}" /></span>
           </h:outputLink>
         </h:panelGroup>
@@ -77,6 +80,8 @@
       </div>
     </header>
   </h:form>
+
+  <comp:cookieNotice />
 
   <main class="w-full px-3 py-6 md:px-8">
     <ui:insert name="content">Nothing here.</ui:insert>

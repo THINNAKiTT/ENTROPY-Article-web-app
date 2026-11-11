@@ -13,7 +13,7 @@
     <comp:feedLayout>
       <comp:feedTabs active="latest" />
 
-      <comp:articleGrid items="#{homeBean.articles}" owner="#{homeBean}">
+      <comp:articleGrid items="#{latestBean.articles}" owner="#{latestBean}">
         <f:facet name="whenEmpty">
           <h:panelGroup>
             <comp:emptyState rendered="#{userSessionBean.loggedIn}" title="No articles yet."

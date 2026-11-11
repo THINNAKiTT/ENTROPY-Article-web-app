@@ -20,14 +20,14 @@
         <h1 class="text-2xl font-bold tracking-tight">
           Results for &#8220;<h:outputText value="#{searchBean.q}" />&#8221;
         </h1>
-        <p:button href="#{nav.home}" value="Clear tag" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
+        <p:button href="#{nav.latest}" value="Clear tag" icon="pi pi-times" styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
       </div>
 
       <comp:articleGrid items="#{searchBean.articles}" owner="#{searchBean}">
         <f:facet name="whenEmpty">
           <comp:emptyState icon="pi pi-search" title="Nothing matches that."
                            text="Try a different word, or look at everything."
-                           actionLabel="Clear tags" actionIcon="pi pi-book" actionHref="#{nav.home}" />
+                           actionLabel="Clear tags" actionIcon="pi pi-book" actionHref="#{nav.latest}" />
         </f:facet>
       </comp:articleGrid>
     </comp:feedLayout>

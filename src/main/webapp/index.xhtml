@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:h="jakarta.faces.html"
+  xmlns:f="jakarta.faces.core"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:p="primefaces"
+  xmlns:comp="jakarta.faces.composite/components"
+>
+<ui:composition template="/WEB-INF/templates/layout.xhtml">
+  <ui:define name="title">Entropy - write it down anyway</ui:define>
+
+  <ui:define name="content">
+    <div class="flex flex-col gap-12">
+
+      <section class="hero grid items-center gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div class="flex flex-col items-start gap-5">
+          <p:tag value="A home for long thoughts" icon="pi pi-pencil" severity="info" rounded="true" />
+          <h1 class="hero-title">
+            Everything tends toward disorder.
+            <span class="hero-accent">Write it down anyway.</span>
+          </h1>
+          <p class="muted hero-lead">
+            Entropy is a place to publish articles, follow the writers you like and keep the ones worth rereading.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <p:button href="#{nav.latest}" value="Read the latest" icon="pi pi-arrow-right" iconPos="right" styleClass="btn-lg" />
+            <ui:fragment rendered="#{userSessionBean.loggedIn}">
+              <p:button href="#{nav.write}" value="Write an article" icon="pi pi-pencil" styleClass="ui-button-outlined btn-lg" />
+            </ui:fragment>
+            <ui:fragment rendered="#{!userSessionBean.loggedIn}">
+              <p:button href="#" onclick="PF('signupDialog').show(); return false;" value="Create an account" icon="pi pi-user-plus"
+                        styleClass="ui-button-outlined btn-lg" />
+            </ui:fragment>
+          </div>
+        </div>
+
+        <p:card styleClass="hero-card">
+          <f:facet name="title"><i class="pi pi-chart-line mr-2" />Trending now</f:facet>
+          <ui:fragment rendered="#{empty landingBean.trending}">
+            <p class="muted">Nothing here yet. The first article will show up here.</p>
+          </ui:fragment>
+          <ui:repeat value="#{landingBean.trending}" var="a" varStatus="row">
+            <div class="trend-row">
+              <p:avatar label="#{row.index + 1}" shape="circle" dynamicColor="true" size="large" />
+              <div class="min-w-0">
+                <h:outputLink value="#{nav.article(a.slug)}" styleClass="entry-link font-bold">
+                  <h:outputText value="#{a.title}" />
+                </h:outputLink>
+                <p class="muted text-sm">
+                  <h:outputText value="#{a.authorName}" />
+                  <span class="mx-1">·</span><h:outputText value="#{a.likeCount}" /> likes
+                </p>
+              </div>
+            </div>
+          </ui:repeat>
+        </p:card>
+      </section>
+
+      <ui:fragment rendered="#{not empty landingBean.featured}">
+        <section>
+          <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 class="section-title">Popular right now</h2>
+              <p class="muted">The articles people are liking and talking about.</p>
+            </div>
+            <p:button href="#{nav.popular}" value="See all popular" icon="pi pi-arrow-right" iconPos="right"
+                      styleClass="ui-button-flat" />
+          </div>
+
+          <p:carousel value="#{landingBean.featured}" var="a" numVisible="3" numScroll="1"
+                      circular="#{landingBean.featured.size() gt 3}"
+                      autoplayInterval="#{landingBean.featured.size() gt 3 ? 6000 : 0}"
+                      responsiveOptions="#{landingBean.responsiveOptions}">
+            <div class="carousel-card">
+              <h3 class="text-lg font-bold">
+                <h:outputLink value="#{nav.article(a.slug)}" styleClass="entry-link">
+                  <h:outputText value="#{a.title}" />
+                </h:outputLink>
+              </h3>
+              <p class="muted mt-1 text-sm">
+                <h:outputText value="#{a.authorName}" />
+                <span class="mx-1">·</span><h:outputText value="#{a.readingTime}" />
+              </p>
+              <p class="excerpt mt-3 text-sm"><h:outputText value="#{a.excerpt}" /></p>
+              <p class="muted mt-auto pt-4 text-sm">
+                <i class="pi pi-heart" /> <h:outputText value="#{a.likeCount}" />
+                <i class="pi pi-comment ml-3" /> <h:outputText value="#{a.commentCount}" />
+              </p>
+            </div>
+          </p:carousel>
+        </section>
+      </ui:fragment>
+
+      <section>
+        <div>
+          <h2 class="section-title">How it works</h2>
+          <p class="muted mb-5">Three steps from nothing to published.</p>
+          <div class="grid gap-5 md:grid-cols-3">
+            <p:card>
+              <p:avatar label="1" shape="circle" size="xlarge" styleClass="step-avatar" />
+              <h3 class="mt-4 text-lg font-bold">Create an account</h3>
+              <p class="muted mt-2 text-sm">Pick a username and you are in. It takes a few seconds.</p>
+            </p:card>
+            <p:card>
+              <p:avatar label="2" shape="circle" size="xlarge" styleClass="step-avatar" />
+              <h3 class="mt-4 text-lg font-bold">Write something</h3>
+              <p class="muted mt-2 text-sm">Use the editor, add pictures and save a draft until it feels right.</p>
+            </p:card>
+            <p:card>
+              <p:avatar label="3" shape="circle" size="xlarge" styleClass="step-avatar" />
+              <h3 class="mt-4 text-lg font-bold">Publish it</h3>
+              <p class="muted mt-2 text-sm">Your article gets its own address that you can share anywhere.</p>
+            </p:card>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-band">
+        <h2 class="cta-title">Your thoughts deserve a page.</h2>
+        <p class="cta-text">Join the writers already on Entropy.</p>
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <ui:fragment rendered="#{userSessionBean.loggedIn}">
+            <p:button href="#{nav.write}" value="Write an article" icon="pi pi-pencil" styleClass="btn-lg cta-solid" />
+          </ui:fragment>
+          <ui:fragment rendered="#{!userSessionBean.loggedIn}">
+            <p:button href="#" onclick="PF('signupDialog').show(); return false;" value="Create an account" icon="pi pi-user-plus"
+                      styleClass="btn-lg cta-solid" />
+            <p:button href="#" onclick="PF('loginDialog').show(); return false;" value="Log in" icon="pi pi-sign-in"
+                      styleClass="btn-lg cta-outline" />
+          </ui:fragment>
+        </div>
+      </section>
+    </div>
+  </ui:define>
+</ui:composition>
+</html>

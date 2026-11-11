@@ -1,5 +1,6 @@
 package users.controller;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
@@ -7,9 +8,17 @@ import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.HexFormat;
+import users.dao.LoginTokenDao;
 import users.dao.UserDao;
 import users.model.User;
 import util.Texts;
+import web.Cookies;
 import web.Faces;
 import web.Urls;
 
@@ -18,14 +27,75 @@ import web.Urls;
 public class UserSessionBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private static final String LOGIN_COOKIE = "entropy_login";
+    private static final int LOGIN_SECONDS = 30 * 24 * 60 * 60;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private final UserDao dao = new UserDao();
+    private final LoginTokenDao tokens = new LoginTokenDao();
 
     private User currentUser;
 
     private String loginUsername;
     private String loginPassword;
+    private boolean rememberMe = true;
 
     private User newUser = new User();
+
+    @PostConstruct
+    void init() {
+        String cookie = Cookies.get(LOGIN_COOKIE);
+        if (cookie == null) {
+            return;
+        }
+        String[] parts = cookie.split("\\.", 2);
+        try {
+            LoginTokenDao.Token token = parts.length == 2 ? tokens.find(parts[0]) : null;
+            if (token != null && token.expiresAt().toInstant().isAfter(Instant.now())
+                    && MessageDigest.isEqual(sha256(parts[1]).getBytes(StandardCharsets.UTF_8), token.hash().getBytes(StandardCharsets.UTF_8))) {
+                currentUser = dao.findById(token.userId());
+            }
+            if (currentUser == null) {
+                Cookies.remove(LOGIN_COOKIE);
+            }
+        } catch (Exception e) {
+            currentUser = null;
+        }
+    }
+
+    private void rememberLogin(Long userId) throws Exception {
+        String selector = randomToken(12);
+        String validator = randomToken(32);
+        tokens.create(userId, selector, sha256(validator), Instant.now().plusSeconds(LOGIN_SECONDS));
+        Cookies.set(LOGIN_COOKIE, selector + "." + validator, LOGIN_SECONDS);
+    }
+
+    private void forgetLogin() {
+        String cookie = Cookies.get(LOGIN_COOKIE);
+        if (cookie != null) {
+            try {
+                tokens.delete(cookie.split("\\.", 2)[0]);
+            } catch (Exception ignored) {
+            }
+            Cookies.remove(LOGIN_COOKIE);
+        }
+    }
+
+    private static String randomToken(int bytes) {
+        byte[] data = new byte[bytes];
+        RANDOM.nextBytes(data);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(data);
+    }
+
+    private static String sha256(String value) throws Exception {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public void forgetAllLogins() throws Exception {
+        if (currentUser != null) {
+            tokens.deleteForUser(currentUser.getId());
+        }
+    }
 
     public boolean isLoggedIn() {
         return currentUser != null;
@@ -50,6 +120,9 @@ public class UserSessionBean implements Serializable {
                 return null;
             }
             startSession(user);
+            if (rememberMe) {
+                rememberLogin(user.getId());
+            }
             loginUsername = null;
             loginPassword = null;
             Faces.info("Login success", "Welcome, " + user.getDisplayName());
@@ -94,6 +167,7 @@ public class UserSessionBean implements Serializable {
 
             User created = dao.findById(dao.insert(newUser));
             startSession(created);
+            rememberLogin(created.getId());
             newUser = new User();
             Faces.info("Sign up success", "Account created! Welcome, " + created.getDisplayName());
             Faces.reloadPage();
@@ -104,6 +178,7 @@ public class UserSessionBean implements Serializable {
     }
 
     public String logout() {
+        forgetLogin();
         currentUser = null;
         loginUsername = null;
         loginPassword = null;
@@ -134,6 +209,9 @@ public class UserSessionBean implements Serializable {
 
     public String getLoginUsername() { return loginUsername; }
     public void setLoginUsername(String loginUsername) { this.loginUsername = loginUsername; }
+
+    public boolean isRememberMe() { return rememberMe; }
+    public void setRememberMe(boolean rememberMe) { this.rememberMe = rememberMe; }
 
     public String getLoginPassword() { return loginPassword; }
     public void setLoginPassword(String loginPassword) { this.loginPassword = loginPassword; }

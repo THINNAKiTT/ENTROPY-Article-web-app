@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:cc="jakarta.faces.composite"
+  xmlns:p="primefaces"
+>
+<cc:interface>
+</cc:interface>
+
+<cc:implementation>
+  <div id="cookieNotice" class="cookie-notice" role="region" aria-label="Cookies and local storage">
+    <i class="pi pi-info-circle" />
+    <span>
+      Entropy sets a cookie to keep you logged in (only if you leave "Keep me logged in" ticked) and uses this
+      browser's local storage to keep a copy of an article you have not saved yet. Nothing is sent to anyone else.
+    </span>
+    <p:button href="#" value="Got it" icon="pi pi-check" styleClass="ui-button-sm"
+              onclick="try { localStorage.setItem('entropy.notice', 'seen'); } catch (e) {} document.getElementById('cookieNotice').style.display = 'none'; return false;" />
+  </div>
+  <script>
+    try {
+      if (!localStorage.getItem('entropy.notice')) {
+        document.getElementById('cookieNotice').style.display = 'flex';
+      }
+    } catch (e) {}
+  </script>
+</cc:implementation>
+</html>

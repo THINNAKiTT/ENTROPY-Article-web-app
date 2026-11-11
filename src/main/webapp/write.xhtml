@@ -16,27 +16,66 @@
   <ui:define name="title">#{editorBean.editing ? 'Edit article' : 'Write'} - Entropy</ui:define>
 
   <ui:define name="content">
-    <h:form id="editor">
+    <h:form id="editor" enctype="multipart/form-data">
       <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
 
         <p:card>
           <f:facet name="title">#{editorBean.editing ? 'Edit article' : 'Write something'}</f:facet>
 
           <div class="mt-2 flex flex-col gap-5">
+            <div id="draftNotice" class="items-center gap-3 rounded border border-hair p-3" style="display: none; background: #FFF8E1">
+              <i class="pi pi-history" />
+              <span class="text-sm">You have an unsaved copy of this article from <strong id="draftTime"></strong> in this browser.</span>
+              <span class="ml-auto flex gap-2">
+                <p:button href="#" value="Restore" icon="pi pi-replay" styleClass="ui-button-sm"
+                          onclick="restoreDraft(); return false;" />
+                <p:button href="#" value="Discard" icon="pi pi-times" styleClass="ui-button-flat ui-button-secondary ui-button-sm"
+                          onclick="discardDraft(); return false;" />
+              </span>
+            </div>
+
             <div class="flex flex-col gap-2">
               <p:outputLabel for="title" value="Title" />
               <p:inputText id="title" value="#{editorBean.article.title}" maxlength="200" styleClass="write-title w-full" />
             </div>
 
             <div class="flex flex-col gap-2">
-              <p:outputLabel for="content" value="Article" />
-              <p:inputTextarea id="content" value="#{editorBean.article.content}" rows="22" autoResize="false" styleClass="write-body w-full" />
-              <small class="muted">Plain text. A blank line starts a new paragraph.</small>
+              <span class="font-semibold">Article</span>
+              <p:textEditor id="content" widgetVar="articleEditor" value="#{editorBean.article.content}" styleClass="write-editor"
+                            secure="false" placeholder="Start writing...">
+                <f:facet name="toolbar">
+                  <span class="ql-formats">
+                    <button class="ql-header" value="1" type="button"></button>
+                    <button class="ql-header" value="2" type="button"></button>
+                    <button class="ql-bold" type="button"></button>
+                    <button class="ql-italic" type="button"></button>
+                    <button class="ql-underline" type="button"></button>
+                    <button class="ql-strike" type="button"></button>
+                  </span>
+                  <span class="ql-formats">
+                    <select class="ql-color"></select>
+                    <select class="ql-background"></select>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-list" value="ordered" type="button"></button>
+                    <button class="ql-list" value="bullet" type="button"></button>
+                    <button class="ql-indent" value="-1" type="button"></button>
+                    <button class="ql-indent" value="+1" type="button"></button>
+                    <select class="ql-align"></select>
+                  </span>
+                  <span class="ql-formats">
+                    <button class="ql-blockquote" type="button"></button>
+                    <button class="ql-code-block" type="button"></button>
+                    <button class="ql-link" type="button"></button>
+                    <button class="ql-clean" type="button"></button>
+                  </span>
+                </f:facet>
+              </p:textEditor>
             </div>
           </div>
         </p:card>
 
-        <aside class="grid content-start gap-6 xl:sticky xl:top-4 xl:self-start">
+        <aside class="grid content-start gap-6">
           <p:card>
             <f:facet name="title">Publish</f:facet>
 
@@ -52,7 +91,8 @@
                                  action="#{editorBean.publish}" ajax="false" styleClass="w-full" />
                 <p:commandButton value="#{editorBean.article.published ? 'Move to drafts' : 'Save draft'}" icon="pi pi-save"
                                  action="#{editorBean.saveDraft}" ajax="false" styleClass="ui-button-outlined ui-button-secondary w-full" />
-                <p:button href="#{nav.home}" value="Cancel" icon="pi pi-times" styleClass="ui-button-flat ui-button-secondary w-full" />
+                <p:button href="#{nav.latest}" value="Cancel" icon="pi pi-times" styleClass="ui-button-flat ui-button-secondary w-full" />
+                <small class="muted text-center"><i class="pi pi-save mr-1" /><span id="draftStatus">Unsaved text is kept in this browser as you type.</span></small>
               </div>
 
               <ui:fragment rendered="#{editorBean.editing}">
@@ -64,9 +104,175 @@
               </ui:fragment>
             </div>
           </p:card>
+
+          <p:card>
+            <f:facet name="title">Pictures</f:facet>
+
+            <div class="flex flex-col gap-4">
+              <p:fileUpload mode="advanced" multiple="true" auto="true" sequential="true" dragDrop="true"
+                            label="Choose pictures" chooseIcon="pi pi-images" accept="image/png,image/jpeg,image/gif"
+                            listener="#{editorBean.uploadImage}" update=":editor:gallery :growl">
+                <p:validateFile allowTypes="/(\.|\/)(gif|jpe?g|png)$/" sizeLimit="5242880" fileLimit="30" />
+              </p:fileUpload>
+              <small class="muted">PNG, JPEG or GIF, up to 5 MB each. Big pictures are shrunk. Put the cursor in the text, then press Insert.</small>
+
+              <h:panelGroup id="gallery" layout="block">
+                <p class="muted text-sm" style="#{empty editorBean.images ? '' : 'display:none'}">No pictures yet.</p>
+                <div class="flex flex-col gap-3">
+                  <ui:repeat value="#{editorBean.images}" var="img">
+                    <div class="flex items-center gap-3 rounded border border-hair p-2">
+                      <img src="#{nav.image(img.id)}" alt="#{img.fileName}" class="rounded object-cover" style="width: 4.5rem; height: 4.5rem; flex: none" />
+                      <div class="min-w-0 flex-1">
+                        <p class="muted truncate text-sm"><h:outputText value="#{img.fileName}" /></p>
+                        <div class="mt-1 flex items-center gap-2">
+                          <p:commandButton type="button" value="Insert" icon="pi pi-plus" onclick="insertArticleImage('#{nav.image(img.id)}')"
+                                           styleClass="btn-compact" />
+                          <p:commandButton icon="pi pi-trash" title="Delete this picture" action="#{editorBean.removeImage(img.id)}" process="@this"
+                                           update=":editor:gallery :growl" oncomplete="removeArticleImage(#{img.id})"
+                                           styleClass="ui-button-flat ui-button-danger btn-compact" />
+                        </div>
+                      </div>
+                    </div>
+                  </ui:repeat>
+                </div>
+              </h:panelGroup>
+            </div>
+          </p:card>
         </aside>
       </div>
     </h:form>
+
+    <script>
+      var DRAFT_KEY = 'entropy.draft.#{editorBean.editing ? editorBean.article.id : 'new'}';
+      var draftReady = false;
+      var draftLast = '';
+      var draftTimer = null;
+      var TAG_PATTERN = new RegExp('\\u003c[^>]*>', 'g');
+
+      function draftField(id) {
+        return document.getElementById('editor:' + id);
+      }
+
+      function draftEditor() {
+        var widget = PF('articleEditor');
+        return widget ? (widget.editor ? widget : null) : null;
+      }
+
+      function draftRead() {
+        return { title: draftField('title').value, tags: draftField('tags').value, html: draftEditor().getEditorValue() };
+      }
+
+      function draftEmpty(d) {
+        if (d.title.trim() !== '' || d.tags.trim() !== '') {
+          return false;
+        }
+        if (d.html.indexOf('\u003cimg') !== -1) {
+          return false;
+        }
+        return d.html.replace(TAG_PATTERN, '').trim() === '';
+      }
+
+      function draftSave() {
+        if (!draftReady || !draftEditor()) {
+          return;
+        }
+        try {
+          var d = draftRead();
+          var json = JSON.stringify(d);
+          if (json === draftLast) {
+            return;
+          }
+          draftLast = json;
+          if (draftEmpty(d)) {
+            localStorage.removeItem(DRAFT_KEY);
+            return;
+          }
+          d.savedAt = Date.now();
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+          document.getElementById('draftStatus').textContent = 'Copy kept in this browser at ' + new Date(d.savedAt).toLocaleTimeString();
+        } catch (e) {}
+      }
+
+      function restoreDraft() {
+        try {
+          var d = JSON.parse(localStorage.getItem(DRAFT_KEY));
+          var widget = draftEditor();
+          draftField('title').value = d.title || '';
+          draftField('tags').value = d.tags || '';
+          widget.editor.clipboard.dangerouslyPasteHTML(d.html || '', 'api');
+          widget.input.val(widget.getEditorValue());
+        } catch (e) {}
+        document.getElementById('draftNotice').style.display = 'none';
+        draftReady = true;
+        draftSave();
+      }
+
+      function discardDraft() {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        document.getElementById('draftNotice').style.display = 'none';
+        draftLast = JSON.stringify(draftRead());
+        draftReady = true;
+      }
+
+      function draftDiffers(stored, now) {
+        if (stored.title !== now.title || stored.tags !== now.tags) {
+          return true;
+        }
+        return stored.html !== now.html;
+      }
+
+      function draftStart() {
+        if (!draftEditor()) {
+          if (draftTimer === null) {
+            draftTimer = setInterval(draftStart, 150);
+          }
+          return;
+        }
+        if (draftTimer !== null) {
+          clearInterval(draftTimer);
+          draftTimer = null;
+        }
+        var stored = null;
+        try { stored = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) {}
+        var now = draftRead();
+        var offer = false;
+        if (stored) {
+          offer = draftDiffers(stored, now) ? !draftEmpty(stored) : false;
+        }
+        if (offer) {
+          document.getElementById('draftTime').textContent = new Date(stored.savedAt).toLocaleString();
+          document.getElementById('draftNotice').style.display = 'flex';
+        } else {
+          draftLast = JSON.stringify(now);
+          draftReady = true;
+        }
+        setInterval(draftSave, 3000);
+        window.addEventListener('beforeunload', draftSave);
+      }
+
+      $(function () { draftStart(); });
+
+      function insertArticleImage(src) {
+        var quill = PF('articleEditor').editor;
+        var range = quill.getSelection(true);
+        quill.insertEmbed(range.index, 'image', src, 'api');
+        quill.setSelection(range.index + 1, 0, 'api');
+      }
+      function removeArticleImage(id) {
+        var widget = PF('articleEditor');
+        var found = false;
+        widget.editor.root.querySelectorAll('img').forEach(function (img) {
+          if (img.getAttribute('src').endsWith('/image/' + id)) {
+            img.remove();
+            found = true;
+          }
+        });
+        if (found) {
+          widget.editor.update('api');
+          widget.input.val(widget.getEditorValue());
+        }
+      }
+    </script>
   </ui:define>
 </ui:composition>
 </html>

@@ -14,7 +14,7 @@
 <cc:implementation>
   <p:card>
     <div class="flex items-start gap-3">
-      <comp:userAvatar label="#{cc.attrs.user.initial}" imageUrl="#{cc.attrs.user.avatarUrl}" size="large" />
+      <comp:userAvatar label="#{cc.attrs.user.initial}" imageUrl="#{cc.attrs.user.avatarSrc}" size="large" />
       <div class="min-w-0">
         <h:outputLink value="#{nav.profile(cc.attrs.user.username)}" styleClass="link text-lg font-bold">
           <h:outputText value="#{cc.attrs.user.displayName}" />
